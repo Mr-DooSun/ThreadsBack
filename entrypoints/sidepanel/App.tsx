@@ -21,8 +21,8 @@ import {
   toggleUsernameFlag,
 } from '../../lib/storage';
 import type { Account, StoredRelationshipState } from '../../lib/types';
+import { I18nProvider, useI18n, type Locale } from './i18n';
 
-type ViewTab = 'import' | 'analysis';
 type ImportStatus = 'idle' | 'parsing' | 'ready' | 'error';
 
 const HELP_LINKS = {
@@ -31,12 +31,24 @@ const HELP_LINKS = {
 };
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<ViewTab>('import');
+  return (
+    <I18nProvider>
+      <AppShell />
+    </I18nProvider>
+  );
+}
+
+function AppShell() {
+  const { t } = useI18n();
   const [state, setState] = useState<StoredRelationshipState | null>(null);
   const [importStatus, setImportStatus] = useState<ImportStatus>('idle');
   const [parseResult, setParseResult] = useState<ExportParseResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [showHowTo, setShowHowTo] = useState(false);
+  const [showKept, setShowKept] = useState(false);
+  const [reuploadOpen, setReuploadOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const analysis = useMemo(
@@ -45,14 +57,14 @@ export default function App() {
   );
 
   useEffect(() => {
-    void loadRelationshipState().then(setState).catch((loadError: unknown) => {
-      setError(
-        loadError instanceof Error
-          ? loadError.message
-          : '저장된 데이터를 불러오지 못했습니다.',
-      );
-    });
-  }, []);
+    void loadRelationshipState()
+      .then(setState)
+      .catch((loadError: unknown) => {
+        setError(
+          loadError instanceof Error ? loadError.message : t.notice.loadError,
+        );
+      });
+  }, [t.notice.loadError]);
 
   async function handleFileChange(files: FileList | null) {
     const selectedFiles = files ? [...files] : [];
@@ -71,13 +83,13 @@ export default function App() {
       const result = await parseExportFiles(selectedFiles);
       setParseResult(result);
       setImportStatus('ready');
-      setNotice('파일을 읽었습니다. 건수를 확인한 뒤 분석에 반영하세요.');
+      setNotice(t.notice.filesParsed);
     } catch (parseError) {
       setImportStatus('error');
       setError(
         parseError instanceof ExportParseError || parseError instanceof Error
           ? parseError.message
-          : '파일을 읽지 못했습니다.',
+          : t.notice.parseError,
       );
     } finally {
       if (fileInputRef.current) {
@@ -98,8 +110,10 @@ export default function App() {
 
     await saveRelationshipState(nextState);
     setState(nextState);
-    setNotice('분석 데이터에 반영했습니다.');
-    setActiveTab('analysis');
+    setParseResult(null);
+    setImportStatus('idle');
+    setReuploadOpen(false);
+    setNotice(t.notice.applied);
   }
 
   async function toggleFlag(
@@ -114,177 +128,169 @@ export default function App() {
   }
 
   async function resetAll() {
+    if (!window.confirm(t.header.resetConfirm)) return;
+
     const nextState = await resetRelationshipState();
     setState(nextState);
     setParseResult(null);
     setImportStatus('idle');
-    setNotice('로컬 저장 데이터를 초기화했습니다.');
+    setReuploadOpen(false);
+    setShowKept(false);
+    setShowSettings(false);
+    setError(null);
+    setNotice(t.notice.reset);
   }
 
   if (!state || !analysis) {
     return (
-      <main className="flex min-h-screen w-full items-center justify-center bg-slate-50 text-sm text-slate-600">
-        불러오는 중
+      <main className="flex min-h-screen w-full items-center justify-center bg-slate-50 text-sm text-slate-500">
+        …
       </main>
     );
   }
 
+  const hasData = state.following.length > 0 && state.followers.length > 0;
+
   return (
     <main className="min-h-screen w-full bg-slate-50 text-slate-950">
-      <header className="border-b border-slate-200 bg-white px-5 py-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-base font-semibold">FollowMirror</h1>
-            <p className="mt-1 text-xs text-slate-500">공식 데이터 사본 로컬 분석</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => void resetAll()}
-            className="rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
-          >
-            초기화
-          </button>
-        </div>
-        <nav className="mt-4 grid grid-cols-2 rounded-md bg-slate-100 p-1">
-          <TabButton
-            active={activeTab === 'import'}
-            onClick={() => setActiveTab('import')}
-          >
-            가져오기
-          </TabButton>
-          <TabButton
-            active={activeTab === 'analysis'}
-            onClick={() => setActiveTab('analysis')}
-          >
-            분석 결과
-          </TabButton>
-        </nav>
-      </header>
+      <Header onOpenSettings={() => setShowSettings(true)} />
 
-      {(error || notice) && (
-        <section className="px-4 pt-3">
-          {notice && <Status tone="success">{notice}</Status>}
-          {error && <Status tone="error">{error}</Status>}
-        </section>
-      )}
-
-      {activeTab === 'import' ? (
-        <ImportPanel
-          status={importStatus}
-          result={parseResult}
-          inputRef={fileInputRef}
-          onFilesSelected={(files) => void handleFileChange(files)}
-          onApply={() => void applyParseResult()}
+      {showSettings ? (
+        <SettingsView
+          canReset={hasData || state.following.length > 0 || state.followers.length > 0}
+          onClose={() => setShowSettings(false)}
+          onReset={() => void resetAll()}
         />
       ) : (
-        <AnalysisPanel
-          state={state}
-          analysis={analysis}
-          onToggleKeep={(username) => void toggleFlag('keptUsernames', username)}
-          onToggleHidden={(username) => void toggleFlag('hiddenUsernames', username)}
-        />
+        <>
+          {(error || notice) && (
+            <section className="px-4 pt-3">
+              {notice && (
+                <Status tone="success" onDismiss={() => setNotice(null)}>
+                  {notice}
+                </Status>
+              )}
+              {error && (
+                <Status tone="error" onDismiss={() => setError(null)}>
+                  {error}
+                </Status>
+              )}
+            </section>
+          )}
+
+          {!hasData ? (
+            <UploadView
+              state={state}
+              status={importStatus}
+              parseResult={parseResult}
+              showHowTo={showHowTo}
+              onToggleHowTo={() => setShowHowTo((prev) => !prev)}
+              inputRef={fileInputRef}
+              onFilesSelected={(files) => void handleFileChange(files)}
+              onApply={() => void applyParseResult()}
+            />
+          ) : (
+            <ResultsView
+              state={state}
+              analysis={analysis}
+              showKept={showKept}
+              onToggleKeptList={() => setShowKept((prev) => !prev)}
+              reuploadOpen={reuploadOpen}
+              onToggleReupload={() => setReuploadOpen((prev) => !prev)}
+              status={importStatus}
+              parseResult={parseResult}
+              inputRef={fileInputRef}
+              onFilesSelected={(files) => void handleFileChange(files)}
+              onApply={() => void applyParseResult()}
+              onToggleKeep={(username) =>
+                void toggleFlag('keptUsernames', username)
+              }
+              onToggleHidden={(username) =>
+                void toggleFlag('hiddenUsernames', username)
+              }
+            />
+          )}
+        </>
       )}
     </main>
   );
 }
 
-function ImportPanel({
-  status,
-  result,
-  inputRef,
-  onFilesSelected,
-  onApply,
-}: {
-  status: ImportStatus;
-  result: ExportParseResult | null;
-  inputRef: RefObject<HTMLInputElement | null>;
-  onFilesSelected: (files: FileList | null) => void;
-  onApply: () => void;
-}) {
-  const canApply =
-    result !== null && (result.following.length > 0 || result.followers.length > 0);
+function Header({ onOpenSettings }: { onOpenSettings: () => void }) {
+  const { t } = useI18n();
 
   return (
-    <section className="space-y-4 px-4 py-4">
+    <header className="border-b border-slate-200 bg-white px-5 py-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="truncate text-base font-semibold">{t.app.name}</h1>
+          <p className="mt-0.5 text-xs text-slate-500">{t.app.tagline}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          aria-label={t.header.settings}
+          className="shrink-0 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+        >
+          {t.header.settings}
+        </button>
+      </div>
+    </header>
+  );
+}
+
+function SettingsView({
+  canReset,
+  onClose,
+  onReset,
+}: {
+  canReset: boolean;
+  onClose: () => void;
+  onReset: () => void;
+}) {
+  const { t, locale, setLocale } = useI18n();
+
+  return (
+    <section className="space-y-4 px-4 py-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-slate-900">
+          {t.settings.title}
+        </h2>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+        >
+          {t.settings.close}
+        </button>
+      </div>
+
       <div className="rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="text-sm font-semibold">공식 데이터 사본 신청</h2>
-        <p className="mt-2 text-xs leading-5 text-slate-600">
-          Meta가 제공하는 export 파일을 직접 다운로드한 뒤 여기에서만 분석합니다.
+        <h3 className="text-xs font-semibold text-slate-700">
+          {t.settings.language}
+        </h3>
+        <p className="mt-1 text-[11px] text-slate-500">
+          {t.settings.languageHint}
         </p>
-        <div className="mt-3 grid grid-cols-1 gap-2">
-          <LinkButton url={HELP_LINKS.threads}>Threads 데이터 도움말</LinkButton>
-          <LinkButton url={HELP_LINKS.instagram}>Instagram 정보 내보내기</LinkButton>
+        <div className="mt-3">
+          <LanguageToggle locale={locale} onChange={setLocale} />
         </div>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="text-sm font-semibold">요청 체크리스트</h2>
-        <ul className="mt-3 space-y-2 text-xs leading-5 text-slate-600">
-          <li>JSON 형식으로 요청하세요.</li>
-          <li>Followers and following 또는 Connections 항목을 선택하세요.</li>
-          <li>Export to device로 받은 ZIP 또는 JSON 파일을 사용하세요.</li>
-          <li>준비까지 시간이 걸릴 수 있고, 준비된 파일은 제한 기간 안에 내려받아야 합니다.</li>
-        </ul>
-      </div>
-
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="text-sm font-semibold">파일 업로드</h2>
-        <label className="mt-3 flex cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-7 text-center hover:bg-slate-100">
-          <span className="text-sm font-medium text-slate-700">
-            ZIP 또는 JSON 선택
-          </span>
-          <span className="mt-1 text-xs text-slate-500">
-            파일은 브라우저 안에서만 읽습니다.
-          </span>
-          <input
-            ref={inputRef}
-            type="file"
-            accept=".zip,.json,.html,.htm,application/zip,application/json,text/html"
-            multiple
-            className="sr-only"
-            onChange={(event) => onFilesSelected(event.currentTarget.files)}
-          />
-        </label>
-        <p className="mt-3 text-xs text-slate-500">
-          상태: {statusLabel(status)}
-        </p>
-      </div>
-
-      {result && (
+      {canReset && (
         <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <div className="grid grid-cols-2 gap-3 text-center">
-            <Stat label="팔로잉" value={result.following.length} />
-            <Stat label="팔로워" value={result.followers.length} />
-          </div>
-
-          <FileSummary
-            title="인식한 파일"
-            files={result.recognizedFiles}
-            emptyText="아직 인식한 파일이 없습니다."
-          />
-
-          {result.skippedFiles.length > 0 && (
-            <div className="mt-4">
-              <h3 className="text-xs font-semibold text-slate-600">
-                건너뛴 파일
-              </h3>
-              <ul className="mt-2 max-h-28 space-y-1 overflow-y-auto text-xs text-slate-500">
-                {result.skippedFiles.map((file) => (
-                  <li key={`${file.name}:${file.reason}`}>
-                    {file.name} - {file.reason}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
+          <h3 className="text-xs font-semibold text-slate-700">
+            {t.settings.data}
+          </h3>
+          <p className="mt-1 text-[11px] text-slate-500">
+            {t.settings.resetHint}
+          </p>
           <button
             type="button"
-            onClick={onApply}
-            disabled={!canApply}
-            className="mt-4 w-full rounded-md bg-slate-950 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+            onClick={onReset}
+            className="mt-3 w-full rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100"
           >
-            분석에 반영
+            {t.settings.reset}
           </button>
         </div>
       )}
@@ -292,85 +298,410 @@ function ImportPanel({
   );
 }
 
-function AnalysisPanel({
-  state,
-  analysis,
-  onToggleKeep,
-  onToggleHidden,
+function LanguageToggle({
+  locale,
+  onChange,
 }: {
-  state: StoredRelationshipState;
-  analysis: NonNullable<ReturnType<typeof analyzeRelationships>>;
-  onToggleKeep: (username: string) => void;
-  onToggleHidden: (username: string) => void;
+  locale: Locale;
+  onChange: (next: Locale) => void;
 }) {
-  const canReview = state.following.length > 0 && state.followers.length > 0;
-
   return (
-    <section className="px-4 py-4">
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
-        <div className="grid grid-cols-3 gap-3 text-center">
-          <Stat label="팔로잉" value={analysis.followingCount} />
-          <Stat label="팔로워" value={analysis.followerCount} />
-          <Stat label="확인 필요" value={analysis.reviewAccounts.length} />
-        </div>
-      </div>
-
-      <div className="mt-4">
-        {!canReview ? (
-          <EmptyState />
-        ) : (
-          <AccountList
-            title="확인 필요"
-            accounts={analysis.reviewAccounts}
-            emptyText="현재 확인할 계정이 없습니다."
-            onToggleKeep={onToggleKeep}
-            onToggleHidden={onToggleHidden}
-          />
-        )}
-      </div>
-
-      {analysis.keptAccounts.length > 0 && (
-        <div className="mt-4">
-          <AccountList
-            title="유지 목록"
-            accounts={analysis.keptAccounts}
-            emptyText=""
-            onToggleKeep={onToggleKeep}
-            onToggleHidden={onToggleHidden}
-          />
-        </div>
-      )}
-
-      {analysis.hiddenCount > 0 && (
-        <p className="mt-3 text-center text-xs text-slate-500">
-          숨긴 항목 {analysis.hiddenCount.toLocaleString()}개
-        </p>
-      )}
-    </section>
+    <div
+      role="group"
+      className="inline-flex overflow-hidden rounded-md border border-slate-200 text-xs font-medium"
+    >
+      <LangButton
+        active={locale === 'ko'}
+        onClick={() => onChange('ko')}
+        label="한국어"
+      >
+        한국어
+      </LangButton>
+      <LangButton
+        active={locale === 'en'}
+        onClick={() => onChange('en')}
+        label="English"
+      >
+        English
+      </LangButton>
+    </div>
   );
 }
 
-function TabButton({
+function LangButton({
   active,
   onClick,
+  label,
   children,
 }: {
   active: boolean;
   onClick: () => void;
+  label: string;
   children: ReactNode;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-label={label}
+      aria-pressed={active}
       className={
         active
-          ? 'rounded px-3 py-1.5 text-sm font-medium bg-white text-slate-950 shadow-sm'
-          : 'rounded px-3 py-1.5 text-sm font-medium text-slate-500 hover:text-slate-800'
+          ? 'bg-slate-900 px-3 py-1.5 text-white'
+          : 'bg-white px-3 py-1.5 text-slate-600 hover:bg-slate-50'
       }
     >
       {children}
     </button>
+  );
+}
+
+function UploadView({
+  state,
+  status,
+  parseResult,
+  showHowTo,
+  onToggleHowTo,
+  inputRef,
+  onFilesSelected,
+  onApply,
+}: {
+  state: StoredRelationshipState;
+  status: ImportStatus;
+  parseResult: ExportParseResult | null;
+  showHowTo: boolean;
+  onToggleHowTo: () => void;
+  inputRef: RefObject<HTMLInputElement | null>;
+  onFilesSelected: (files: FileList | null) => void;
+  onApply: () => void;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <section className="space-y-4 px-4 py-5">
+      <UploadCard
+        status={status}
+        inputRef={inputRef}
+        onFilesSelected={onFilesSelected}
+      />
+
+      {(state.following.length > 0 || state.followers.length > 0) && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">
+          {t.upload.needBoth}
+          <ul className="mt-1.5 space-y-0.5">
+            {state.following.length > 0 && (
+              <li>{t.upload.haveFollowing(state.following.length)}</li>
+            )}
+            {state.followers.length > 0 && (
+              <li>{t.upload.haveFollowers(state.followers.length)}</li>
+            )}
+          </ul>
+        </div>
+      )}
+
+      {parseResult && (
+        <ParseSummary
+          result={parseResult}
+          onApply={onApply}
+          status={status}
+        />
+      )}
+
+      <HowToBlock open={showHowTo} onToggle={onToggleHowTo} />
+    </section>
+  );
+}
+
+function ResultsView({
+  state,
+  analysis,
+  showKept,
+  onToggleKeptList,
+  reuploadOpen,
+  onToggleReupload,
+  status,
+  parseResult,
+  inputRef,
+  onFilesSelected,
+  onApply,
+  onToggleKeep,
+  onToggleHidden,
+}: {
+  state: StoredRelationshipState;
+  analysis: NonNullable<ReturnType<typeof analyzeRelationships>>;
+  showKept: boolean;
+  onToggleKeptList: () => void;
+  reuploadOpen: boolean;
+  onToggleReupload: () => void;
+  status: ImportStatus;
+  parseResult: ExportParseResult | null;
+  inputRef: RefObject<HTMLInputElement | null>;
+  onFilesSelected: (files: FileList | null) => void;
+  onApply: () => void;
+  onToggleKeep: (username: string) => void;
+  onToggleHidden: (username: string) => void;
+}) {
+  const { t } = useI18n();
+  const reviewCount = analysis.reviewAccounts.length;
+
+  return (
+    <section className="space-y-4 px-4 py-5">
+      <div className="rounded-2xl border border-slate-200 bg-white px-5 py-7 text-center">
+        <p className="text-5xl font-semibold tabular-nums text-slate-950">
+          {reviewCount.toLocaleString()}
+        </p>
+        <p className="mt-2 text-sm font-medium text-slate-700">
+          {t.result.statLabel}
+        </p>
+        <p className="mt-1 text-xs text-slate-500">{t.result.statHint}</p>
+      </div>
+
+      {reviewCount === 0 ? (
+        <div className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-500">
+          {t.result.empty}
+        </div>
+      ) : (
+        <ul className="space-y-2">
+          {analysis.reviewAccounts.map((account) => (
+            <AccountRow
+              key={account.username}
+              account={account}
+              onToggleKeep={onToggleKeep}
+              onToggleHidden={onToggleHidden}
+            />
+          ))}
+        </ul>
+      )}
+
+      {analysis.keptAccounts.length > 0 && (
+        <div className="rounded-lg border border-slate-200 bg-white">
+          <button
+            type="button"
+            onClick={onToggleKeptList}
+            className="flex w-full items-center justify-between px-4 py-3 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            aria-expanded={showKept}
+          >
+            <span>
+              {showKept
+                ? t.result.keptHide
+                : t.result.keptCount(analysis.keptAccounts.length)}
+            </span>
+            <span className="text-slate-400">{showKept ? '−' : '+'}</span>
+          </button>
+          {showKept && (
+            <ul className="space-y-2 border-t border-slate-100 p-3">
+              {analysis.keptAccounts.map((account) => (
+                <AccountRow
+                  key={account.username}
+                  account={account}
+                  onToggleKeep={onToggleKeep}
+                  onToggleHidden={onToggleHidden}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {analysis.hiddenCount > 0 && (
+        <p className="text-center text-xs text-slate-500">
+          {t.result.hiddenSummary(analysis.hiddenCount)}
+        </p>
+      )}
+
+      <div className="rounded-lg border border-slate-200 bg-white">
+        <button
+          type="button"
+          onClick={onToggleReupload}
+          className="flex w-full items-center justify-between px-4 py-3 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50"
+          aria-expanded={reuploadOpen}
+        >
+          <span>{t.result.reupload}</span>
+          <span className="text-slate-400">{reuploadOpen ? '−' : '+'}</span>
+        </button>
+        {reuploadOpen && (
+          <div className="border-t border-slate-100 p-3 space-y-3">
+            <UploadCard
+              status={status}
+              inputRef={inputRef}
+              onFilesSelected={onFilesSelected}
+              compact
+            />
+            {parseResult && (
+              <ParseSummary
+                result={parseResult}
+                onApply={onApply}
+                status={status}
+              />
+            )}
+            <p className="text-[11px] text-slate-500">
+              {t.upload.haveFollowing(state.following.length)} · {t.upload.haveFollowers(state.followers.length)}
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function UploadCard({
+  status,
+  inputRef,
+  onFilesSelected,
+  compact = false,
+}: {
+  status: ImportStatus;
+  inputRef: RefObject<HTMLInputElement | null>;
+  onFilesSelected: (files: FileList | null) => void;
+  compact?: boolean;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <div
+      className={
+        compact
+          ? 'rounded-lg border border-slate-200 bg-white'
+          : 'rounded-2xl border border-slate-200 bg-white p-5'
+      }
+    >
+      {!compact && (
+        <>
+          <h2 className="text-sm font-semibold">{t.upload.heroTitle}</h2>
+          <p className="mt-1 text-xs text-slate-500">
+            {t.upload.heroSubtitle}
+          </p>
+        </>
+      )}
+
+      <label
+        className={
+          compact
+            ? 'flex cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-center hover:bg-slate-100'
+            : 'mt-3 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-9 text-center hover:bg-slate-100'
+        }
+      >
+        <span className="text-sm font-semibold text-slate-700">
+          {t.upload.selectButton}
+        </span>
+        <span className="mt-1 text-xs text-slate-500">
+          {t.upload.dropHere}
+        </span>
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".zip,.json,.html,.htm,application/zip,application/json,text/html"
+          multiple
+          className="sr-only"
+          onChange={(event) => onFilesSelected(event.currentTarget.files)}
+        />
+      </label>
+
+      <p
+        className={
+          compact
+            ? 'px-3 pb-3 pt-2 text-[11px] text-slate-500'
+            : 'mt-3 text-[11px] text-slate-500'
+        }
+      >
+        {t.upload.privacyNote} · {statusLabel(status, t)}
+      </p>
+    </div>
+  );
+}
+
+function ParseSummary({
+  result,
+  onApply,
+  status,
+}: {
+  result: ExportParseResult;
+  onApply: () => void;
+  status: ImportStatus;
+}) {
+  const { t } = useI18n();
+  const canApply =
+    status === 'ready' &&
+    (result.following.length > 0 || result.followers.length > 0);
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <div className="grid grid-cols-2 gap-3 text-center">
+        <Stat label={t.upload.parsedFollowing} value={result.following.length} />
+        <Stat label={t.upload.parsedFollowers} value={result.followers.length} />
+      </div>
+
+      <FileSummary
+        title={t.upload.recognized}
+        files={result.recognizedFiles}
+        emptyText={t.upload.noRecognized}
+      />
+
+      {result.skippedFiles.length > 0 && (
+        <div className="mt-3">
+          <h3 className="text-xs font-semibold text-slate-600">
+            {t.upload.skipped}
+          </h3>
+          <ul className="mt-1.5 max-h-24 space-y-0.5 overflow-y-auto text-[11px] text-slate-500">
+            {result.skippedFiles.map((file) => (
+              <li key={`${file.name}:${file.reason}`}>
+                {file.name} — {file.reason}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={onApply}
+        disabled={!canApply}
+        className="mt-4 w-full rounded-md bg-slate-950 px-3 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+      >
+        {t.upload.applyButton}
+      </button>
+    </div>
+  );
+}
+
+function HowToBlock({
+  open,
+  onToggle,
+}: {
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50"
+        aria-expanded={open}
+      >
+        <span>{t.upload.howToTitle}</span>
+        <span className="text-slate-400">{open ? '−' : '+'}</span>
+      </button>
+      {open && (
+        <div className="space-y-3 border-t border-slate-100 px-4 py-3">
+          <ol className="list-decimal space-y-1.5 pl-4 text-xs leading-5 text-slate-600">
+            {t.upload.howToSteps.map((step, index) => (
+              <li key={index}>{step}</li>
+            ))}
+          </ol>
+          <div className="grid grid-cols-1 gap-2">
+            <LinkButton url={HELP_LINKS.threads}>
+              {t.upload.threadsHelp}
+            </LinkButton>
+            <LinkButton url={HELP_LINKS.instagram}>
+              {t.upload.instagramHelp}
+            </LinkButton>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -379,7 +710,7 @@ function LinkButton({ url, children }: { url: string; children: ReactNode }) {
     <button
       type="button"
       onClick={() => void browser.tabs.create({ url })}
-      className="rounded-md border border-slate-200 px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
+      className="rounded-md border border-slate-200 px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50"
     >
       {children}
     </button>
@@ -400,9 +731,11 @@ function Stat({ label, value }: { label: string; value: number }) {
 function Status({
   tone,
   children,
+  onDismiss,
 }: {
   tone: 'success' | 'error';
   children: ReactNode;
+  onDismiss?: () => void;
 }) {
   const className =
     tone === 'error'
@@ -410,18 +743,20 @@ function Status({
       : 'border-emerald-200 bg-emerald-50 text-emerald-700';
 
   return (
-    <div className={`mb-2 rounded-md border px-3 py-2 text-xs ${className}`}>
-      {children}
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-8 text-center">
-      <p className="text-sm font-medium text-slate-700">
-        가져오기 탭에서 공식 데이터 사본을 업로드하면 결과가 표시됩니다.
-      </p>
+    <div
+      className={`mb-2 flex items-start justify-between gap-2 rounded-md border px-3 py-2 text-xs ${className}`}
+    >
+      <span className="flex-1">{children}</span>
+      {onDismiss && (
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label="dismiss"
+          className="shrink-0 text-current opacity-60 hover:opacity-100"
+        >
+          ×
+        </button>
+      )}
     </div>
   );
 }
@@ -436,55 +771,14 @@ function FileSummary({
   emptyText: string;
 }) {
   return (
-    <div className="mt-4">
+    <div className="mt-3">
       <h3 className="text-xs font-semibold text-slate-600">{title}</h3>
       {files.length === 0 ? (
-        <p className="mt-2 text-xs text-slate-500">{emptyText}</p>
+        <p className="mt-1.5 text-[11px] text-slate-500">{emptyText}</p>
       ) : (
-        <ul className="mt-2 max-h-28 space-y-1 overflow-y-auto text-xs text-slate-500">
+        <ul className="mt-1.5 max-h-24 space-y-0.5 overflow-y-auto text-[11px] text-slate-500">
           {files.map((file) => (
             <li key={file}>{file}</li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-function AccountList({
-  title,
-  accounts,
-  emptyText,
-  onToggleKeep,
-  onToggleHidden,
-}: {
-  title: string;
-  accounts: Account[];
-  emptyText: string;
-  onToggleKeep: (username: string) => void;
-  onToggleHidden: (username: string) => void;
-}) {
-  return (
-    <div>
-      <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-sm font-semibold">{title}</h2>
-        <span className="text-xs tabular-nums text-slate-500">
-          {accounts.length.toLocaleString()}
-        </span>
-      </div>
-      {accounts.length === 0 ? (
-        <div className="rounded-lg border border-slate-200 bg-white px-4 py-5 text-center text-sm text-slate-500">
-          {emptyText}
-        </div>
-      ) : (
-        <ul className="max-h-[340px] space-y-2 overflow-y-auto pr-1">
-          {accounts.map((account) => (
-            <AccountRow
-              key={account.username}
-              account={account}
-              onToggleKeep={onToggleKeep}
-              onToggleHidden={onToggleHidden}
-            />
           ))}
         </ul>
       )}
@@ -501,38 +795,45 @@ function AccountRow({
   onToggleKeep: (username: string) => void;
   onToggleHidden: (username: string) => void;
 }) {
+  const { t } = useI18n();
+
   return (
     <li className="rounded-lg border border-slate-200 bg-white p-3">
-      <div className="flex items-center gap-3">
+      <button
+        type="button"
+        onClick={() => void browser.tabs.create({ url: account.profileUrl })}
+        className="flex w-full items-center gap-3 text-left"
+        aria-label={`${t.result.profile} @${account.username}`}
+      >
         <Avatar account={account} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">
+          <p className="truncate text-sm font-semibold text-slate-900">
             {account.displayName || account.username}
           </p>
           <p className="truncate text-xs text-slate-500">@{account.username}</p>
         </div>
-      </div>
-      <div className="mt-3 grid grid-cols-3 gap-2">
-        <button
-          type="button"
-          onClick={() => void browser.tabs.create({ url: account.profileUrl })}
-          className="rounded-md border border-slate-200 px-2 py-1.5 text-xs font-medium hover:bg-slate-50"
-        >
-          프로필 열기
-        </button>
+        <span className="shrink-0 rounded-md border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-600">
+          {t.result.profile}
+        </span>
+      </button>
+      <div className="mt-2 grid grid-cols-2 gap-2">
         <button
           type="button"
           onClick={() => onToggleKeep(account.username)}
-          className="rounded-md border border-slate-200 px-2 py-1.5 text-xs font-medium hover:bg-slate-50"
+          className={
+            account.kept
+              ? 'rounded-md border border-emerald-300 bg-emerald-50 px-2 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100'
+              : 'rounded-md border border-slate-200 px-2 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50'
+          }
         >
-          {account.kept ? '유지 해제' : '유지'}
+          {account.kept ? t.result.keepUndo : t.result.keep}
         </button>
         <button
           type="button"
           onClick={() => onToggleHidden(account.username)}
-          className="rounded-md border border-slate-200 px-2 py-1.5 text-xs font-medium hover:bg-slate-50"
+          className="rounded-md border border-slate-200 px-2 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
         >
-          숨기기
+          {t.result.hide}
         </button>
       </div>
     </li>
@@ -545,27 +846,27 @@ function Avatar({ account }: { account: Account }) {
       <img
         src={account.avatarUrl}
         alt=""
-        className="h-10 w-10 rounded-full bg-slate-100 object-cover"
+        className="h-10 w-10 shrink-0 rounded-full bg-slate-100 object-cover"
       />
     );
   }
 
   return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-600">
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-600">
       {account.username.slice(0, 1).toUpperCase()}
     </div>
   );
 }
 
-function statusLabel(status: ImportStatus): string {
+function statusLabel(status: ImportStatus, t: ReturnType<typeof useI18n>['t']): string {
   switch (status) {
     case 'parsing':
-      return '읽는 중';
+      return t.upload.statusParsing;
     case 'ready':
-      return '읽기 완료';
+      return t.upload.statusReady;
     case 'error':
-      return '오류';
+      return t.upload.statusError;
     default:
-      return '대기';
+      return t.upload.statusIdle;
   }
 }
