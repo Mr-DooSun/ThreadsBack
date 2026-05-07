@@ -15,17 +15,8 @@ interface Dict {
     tagline: string;
   };
   header: {
-    settings: string;
+    languageToggle: string;
     resetConfirm: string;
-  };
-  settings: {
-    title: string;
-    close: string;
-    language: string;
-    languageHint: string;
-    data: string;
-    reset: string;
-    resetHint: string;
   };
   upload: {
     heroTitle: string;
@@ -56,14 +47,17 @@ interface Dict {
     statLabel: string;
     statHint: string;
     profile: string;
+    openOn: string;
     keep: string;
     keepUndo: string;
     hide: string;
     keptCount: (n: number) => string;
     keptHide: string;
     hiddenSummary: (n: number) => string;
-    empty: string;
+    zeroTitle: string;
+    zeroBody: string;
     reupload: string;
+    resetData: string;
   };
   notice: {
     filesParsed: string;
@@ -80,17 +74,8 @@ const en: Dict = {
     tagline: 'Local-only analysis of your own data export.',
   },
   header: {
-    settings: 'Settings',
+    languageToggle: 'Language',
     resetConfirm: 'Delete all stored data?',
-  },
-  settings: {
-    title: 'Settings',
-    close: 'Close',
-    language: 'Language',
-    languageHint: 'Choose the interface language.',
-    data: 'Data',
-    reset: 'Clear stored data',
-    resetHint: 'Removes everything stored on this device.',
   },
   upload: {
     heroTitle: 'Upload your data file',
@@ -122,17 +107,20 @@ const en: Dict = {
     haveFollowers: (n) => `${n.toLocaleString()} followers stored`,
   },
   result: {
-    statLabel: "Don't follow back",
+    statLabel: "Don't follow you back",
     statHint: "Accounts you follow that don't follow you.",
     profile: 'Open profile',
+    openOn: 'Open on',
     keep: 'Keep',
     keepUndo: 'Unkeep',
     hide: 'Hide',
     keptCount: (n) => `Kept list (${n.toLocaleString()})`,
     keptHide: 'Hide kept list',
     hiddenSummary: (n) => `${n.toLocaleString()} hidden`,
-    empty: 'Everyone follows you back.',
+    zeroTitle: 'All caught up',
+    zeroBody: 'Everyone you follow follows you back.',
     reupload: 'Upload new data',
+    resetData: 'Clear stored data',
   },
   notice: {
     filesParsed: 'File loaded. Apply to add it to the analysis.',
@@ -149,17 +137,8 @@ const ko: Dict = {
     tagline: '내 데이터로 브라우저에서만 분석합니다.',
   },
   header: {
-    settings: '설정',
+    languageToggle: '언어',
     resetConfirm: '저장된 데이터를 모두 지울까요?',
-  },
-  settings: {
-    title: '설정',
-    close: '닫기',
-    language: '언어',
-    languageHint: '인터페이스에 표시할 언어를 선택하세요.',
-    data: '데이터',
-    reset: '저장된 데이터 초기화',
-    resetHint: '이 기기에 저장된 모든 데이터를 지웁니다.',
   },
   upload: {
     heroTitle: '데이터 파일을 업로드하세요',
@@ -191,17 +170,20 @@ const ko: Dict = {
     haveFollowers: (n) => `저장된 팔로워 ${n.toLocaleString()}명`,
   },
   result: {
-    statLabel: '뒷삭한 계정',
-    statHint: '내가 팔로우하는데 나를 따르지 않는 계정.',
+    statLabel: '맞팔하지 않는 계정',
+    statHint: '내가 팔로우하지만 나를 팔로우하지 않는 계정.',
     profile: '프로필',
+    openOn: '프로필 열기',
     keep: '유지',
     keepUndo: '유지 해제',
     hide: '숨기기',
     keptCount: (n) => `유지 목록 (${n.toLocaleString()})`,
     keptHide: '유지 목록 닫기',
     hiddenSummary: (n) => `숨긴 항목 ${n.toLocaleString()}개`,
-    empty: '뒷삭한 계정이 없어요.',
+    zeroTitle: '모두 맞팔로우 중',
+    zeroBody: '내가 팔로우하는 모든 계정이 나를 팔로우하고 있어요.',
     reupload: '새 데이터 업로드',
+    resetData: '저장된 데이터 초기화',
   },
   notice: {
     filesParsed: '파일을 읽었어요. 반영 버튼을 눌러 분석에 적용하세요.',

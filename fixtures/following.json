@@ -1,0 +1,169 @@
+{
+  "relationships_following": [
+    {
+      "title": "",
+      "media_list_data": [],
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/john_smith",
+          "value": "john_smith",
+          "timestamp": 1704067200
+        }
+      ]
+    },
+    {
+      "title": "",
+      "media_list_data": [],
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/sarah_kim",
+          "value": "sarah_kim",
+          "timestamp": 1704153600
+        }
+      ]
+    },
+    {
+      "title": "",
+      "media_list_data": [],
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/mr_doosun",
+          "value": "mr_doosun",
+          "timestamp": 1704240000
+        }
+      ]
+    },
+    {
+      "title": "",
+      "media_list_data": [],
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/code_jeju",
+          "value": "code_jeju",
+          "timestamp": 1704326400
+        }
+      ]
+    },
+    {
+      "title": "",
+      "media_list_data": [],
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/daily_devnotes",
+          "value": "daily_devnotes",
+          "timestamp": 1704412800
+        }
+      ]
+    },
+    {
+      "title": "",
+      "media_list_data": [],
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/art_maria",
+          "value": "art_maria",
+          "timestamp": 1704499200
+        }
+      ]
+    },
+    {
+      "title": "",
+      "media_list_data": [],
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/the_curious_cat",
+          "value": "the_curious_cat",
+          "timestamp": 1704585600
+        }
+      ]
+    },
+    {
+      "title": "",
+      "media_list_data": [],
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/_alex",
+          "value": "_alex",
+          "timestamp": 1704672000
+        }
+      ]
+    },
+    {
+      "title": "",
+      "media_list_data": [],
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/design_inspiration",
+          "value": "design_inspiration",
+          "timestamp": 1704758400
+        }
+      ]
+    },
+    {
+      "title": "",
+      "media_list_data": [],
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/photo_master",
+          "value": "photo_master",
+          "timestamp": 1704844800
+        }
+      ]
+    },
+    {
+      "title": "",
+      "media_list_data": [],
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/cool_news_daily",
+          "value": "cool_news_daily",
+          "timestamp": 1704931200
+        }
+      ]
+    },
+    {
+      "title": "",
+      "media_list_data": [],
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/everyday_english",
+          "value": "everyday_english",
+          "timestamp": 1705017600
+        }
+      ]
+    },
+    {
+      "title": "",
+      "media_list_data": [],
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/very_long_username_for_truncation_test",
+          "value": "very_long_username_for_truncation_test",
+          "timestamp": 1705104000
+        }
+      ]
+    },
+    {
+      "title": "",
+      "media_list_data": [],
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/korea_food_diary",
+          "value": "korea_food_diary",
+          "timestamp": 1705190400
+        }
+      ]
+    },
+    {
+      "title": "",
+      "media_list_data": [],
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/indie_dev_log",
+          "value": "indie_dev_log",
+          "timestamp": 1705276800
+        }
+      ]
+    }
+  ]
+}
