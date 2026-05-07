@@ -1,0 +1,7 @@
+node_modules
+.output
+.wxt
+dist
+chrome-mv3
+coverage
+*.log
