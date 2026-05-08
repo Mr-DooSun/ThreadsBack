@@ -133,7 +133,7 @@ const en: Dict = {
 
 const ko: Dict = {
   app: {
-    name: '누가 뒷삭을 했을까?',
+    name: '누가 뒷삭했을까?',
     tagline: '내 데이터로 브라우저에서만 분석합니다.',
   },
   header: {

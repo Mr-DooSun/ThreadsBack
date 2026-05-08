@@ -1,0 +1,18 @@
+{
+  "extensionName": {
+    "message": "Who Unfollowed Me?",
+    "description": "Chrome extension name."
+  },
+  "extensionShortName": {
+    "message": "FollowMirror",
+    "description": "Short Chrome extension name."
+  },
+  "extensionDescription": {
+    "message": "Find accounts you follow that do not follow you back using only your local export file.",
+    "description": "Chrome extension description."
+  },
+  "extensionActionTitle": {
+    "message": "Who Unfollowed Me?",
+    "description": "Toolbar action title."
+  }
+}

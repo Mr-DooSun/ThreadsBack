@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">FollowMirror icon</title>
+  <defs>
+    <linearGradient id="bg" x1="96" y1="72" x2="416" y2="440" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fb7185" />
+      <stop offset="0.52" stop-color="#be123c" />
+      <stop offset="1" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="shine" x1="102" y1="78" x2="320" y2="292" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.32" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#bg)" />
+  <path d="M58 72h188c74 0 122 42 140 108l48 176c18 66-26 98-84 98H118c-70 0-112-42-92-116l48-178c12-46 46-88 112-88Z" fill="url(#shine)" />
+
+  <circle cx="238" cy="184" r="78" fill="#ffffff" />
+  <path d="M106 402c30-88 78-132 144-132 64 0 110 42 138 126 8 24-10 48-36 48H142c-26 0-44-18-36-42Z" fill="#ffffff" />
+  <circle cx="366" cy="154" r="82" fill="#0f172a" opacity="0.9" />
+  <circle cx="366" cy="154" r="58" fill="#22d3ee" />
+  <rect x="322" y="138" width="88" height="32" rx="16" fill="#0f172a" />
+</svg>

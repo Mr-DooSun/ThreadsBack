@@ -1,0 +1,18 @@
+{
+  "extensionName": {
+    "message": "누가 뒷삭했을까?",
+    "description": "Chrome 확장 프로그램 이름입니다."
+  },
+  "extensionShortName": {
+    "message": "뒷삭 찾기",
+    "description": "Chrome 확장 프로그램의 짧은 이름입니다."
+  },
+  "extensionDescription": {
+    "message": "내 데이터 파일만으로 맞팔하지 않는 계정을 브라우저에서 확인합니다.",
+    "description": "Chrome 확장 프로그램 설명입니다."
+  },
+  "extensionActionTitle": {
+    "message": "누가 뒷삭했을까?",
+    "description": "툴바 액션 제목입니다."
+  }
+}

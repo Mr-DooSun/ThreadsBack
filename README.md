@@ -123,6 +123,16 @@ macOS 파일 선택창에서 `.output`이 안 보이면 `Command + Shift + .`로
 │   ├── exportParser.test.ts
 │   ├── storage.ts
 │   └── types.ts
+├── public/
+│   ├── _locales/
+│   │   ├── en/messages.json
+│   │   └── ko/messages.json
+│   └── icons/
+│       ├── 16.png
+│       ├── 32.png
+│       ├── 48.png
+│       ├── 128.png
+│       └── followmirror.svg
 ├── package.json
 ├── tsconfig.json
 ├── wxt.config.ts
@@ -269,7 +279,8 @@ npm run build
 cat .output/chrome-mv3/manifest.json
 ```
 
-정상이라면 다음만 포함되어야 합니다.
+정상이라면 이름/설명은 `__MSG_*__` 키를 사용하고, `_locales`와 `icons`가 함께 출력되어야 합니다.
+권한은 계속 다음만 포함되어야 합니다.
 
 ```json
 {

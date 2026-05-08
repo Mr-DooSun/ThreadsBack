@@ -74,7 +74,7 @@ export default function App() {
 }
 
 function AppShell() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [state, setState] = useState<StoredRelationshipState | null>(null);
   const [importStatus, setImportStatus] = useState<ImportStatus>('idle');
   const [parseResult, setParseResult] = useState<ExportParseResult | null>(null);
@@ -94,6 +94,11 @@ function AppShell() {
   useEffect(() => {
     setPlatformState(detectInitialPlatform());
   }, []);
+
+  useEffect(() => {
+    document.title = t.app.name;
+    document.documentElement.lang = locale;
+  }, [locale, t.app.name]);
 
   useEffect(() => {
     void loadRelationshipState()
@@ -273,9 +278,17 @@ function Header() {
   return (
     <header className="sticky top-0 z-10 themed-elevated border-b themed-border px-4 py-3">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="truncate text-base font-semibold tracking-tight text-strong">
-          {t.app.name}
-        </h1>
+        <div className="min-w-0 flex items-center gap-2">
+          <div
+            aria-hidden
+            className="brand-tile flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+          >
+            <BrandGlyph className="h-5 w-5" />
+          </div>
+          <h1 className="truncate text-base font-semibold tracking-tight text-strong">
+            {t.app.name}
+          </h1>
+        </div>
         <LanguageToggle locale={locale} onChange={setLocale} />
       </div>
     </header>
@@ -461,20 +474,28 @@ function HeroIcon() {
       aria-hidden
       className="brand-tile mx-auto flex h-14 w-14 items-center justify-center rounded-2xl shadow-lg"
     >
-      <svg
-        viewBox="0 0 24 24"
-        className="h-7 w-7"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M12 4v12" />
-        <path d="m6 10 6 6 6-6" />
-        <path d="M5 20h14" />
-      </svg>
+      <BrandGlyph className="h-8 w-8" />
     </div>
+  );
+}
+
+function BrandGlyph({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="29.5" cy="23" r="9.5" fill="currentColor" stroke="none" />
+      <path d="M14 53c4-12 9.8-18 17.8-18 7.7 0 13.4 5.7 17 17" strokeWidth="6" />
+      <circle cx="46" cy="18.5" r="11" fill="var(--bg-page)" stroke="none" opacity="0.9" />
+      <circle cx="46" cy="18.5" r="7" fill="currentColor" stroke="none" />
+      <path d="M40.5 18.5h11" stroke="var(--bg-page)" strokeWidth="4" />
+    </svg>
   );
 }
 
