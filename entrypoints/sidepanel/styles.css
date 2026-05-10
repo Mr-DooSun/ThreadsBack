@@ -218,3 +218,10 @@ body {
   background: var(--brand-grad);
   color: var(--brand-text);
 }
+
+.brand-title {
+  background: var(--brand-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

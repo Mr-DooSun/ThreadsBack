@@ -281,11 +281,11 @@ function Header() {
         <div className="min-w-0 flex items-center gap-2">
           <div
             aria-hidden
-            className="brand-tile flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+            className="brand-tile flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
           >
             <BrandGlyph className="h-5 w-5" />
           </div>
-          <h1 className="truncate text-base font-semibold tracking-tight text-strong">
+          <h1 className="truncate text-lg font-bold tracking-tight brand-title">
             {t.app.name}
           </h1>
         </div>
