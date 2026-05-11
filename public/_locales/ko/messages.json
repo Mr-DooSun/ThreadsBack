@@ -1,6 +1,6 @@
 {
   "extensionName": {
-    "message": "누가 뒷삭했을까?",
+    "message": "누가 뒷삭했을까? - Threads/Instagram 맞팔 확인",
     "description": "Chrome 확장 프로그램 이름입니다."
   },
   "extensionShortName": {
@@ -12,7 +12,7 @@
     "description": "Chrome 확장 프로그램 설명입니다."
   },
   "extensionActionTitle": {
-    "message": "누가 뒷삭했을까?",
+    "message": "누가 뒷삭했을까? - Threads/Instagram 맞팔 확인",
     "description": "툴바 액션 제목입니다."
   }
 }

@@ -1,6 +1,6 @@
 {
   "extensionName": {
-    "message": "Who Unfollowed Me?",
+    "message": "Who Unfollowed Me? for Threads & Instagram",
     "description": "Chrome extension name."
   },
   "extensionShortName": {
@@ -12,7 +12,7 @@
     "description": "Chrome extension description."
   },
   "extensionActionTitle": {
-    "message": "Who Unfollowed Me?",
+    "message": "Who Unfollowed Me? for Threads & Instagram",
     "description": "Toolbar action title."
   }
 }

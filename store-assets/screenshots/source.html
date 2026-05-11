@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FollowMirror Store Screenshots</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background: #f4f5f7;
+        color: #0f172a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 12% 14%, rgba(220, 39, 67, 0.12), transparent 26%),
+          radial-gradient(circle at 88% 18%, rgba(37, 99, 235, 0.13), transparent 30%),
+          linear-gradient(135deg, #f8fafc, #eef2f7);
+      }
+
+      .frame {
+        width: 1280px;
+        height: 800px;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 74px;
+        padding: 64px 78px;
+      }
+
+      .copy {
+        width: 560px;
+      }
+
+      .eyebrow {
+        margin: 0 0 16px;
+        color: #b91c1c;
+        font-size: 17px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 560px;
+        font-size: 58px;
+        line-height: 1.02;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        margin: 24px 0 0;
+        max-width: 500px;
+        color: #475569;
+        font-size: 23px;
+        line-height: 1.42;
+      }
+
+      .pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 34px;
+      }
+
+      .pill {
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.82);
+        color: #334155;
+        padding: 10px 14px;
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .panel {
+        width: 382px;
+        height: 678px;
+        overflow: hidden;
+        border-radius: 30px;
+        border: 1px solid rgba(15, 23, 42, 0.13);
+        background: #fafafa;
+        box-shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+      }
+
+      .panel.dark {
+        background: #09090b;
+        color: #fafafa;
+        border-color: #27272a;
+      }
+
+      .topbar {
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 18px;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        background: #ffffff;
+      }
+
+      .dark .topbar {
+        background: #131316;
+        border-color: #27272a;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+        max-width: 270px;
+        font-size: 17px;
+        font-weight: 800;
+      }
+
+      .brand-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .mark {
+        width: 33px;
+        height: 33px;
+        border-radius: 9px;
+        background-image: url("../icon-128.png");
+        background-position: center;
+        background-size: cover;
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+      }
+
+      .lang {
+        border-radius: 999px;
+        background: #0f172a;
+        color: #ffffff;
+        padding: 5px 10px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        margin: 14px 18px 0;
+        padding: 4px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.05);
+      }
+
+      .dark .tabs {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .tab {
+        border-radius: 999px;
+        padding: 8px 0;
+        text-align: center;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .tab.active {
+        color: #ffffff;
+        background: linear-gradient(135deg, #f09433 0%, #dc2743 52%, #bc1888 100%);
+      }
+
+      .dark .tab.active {
+        color: #09090b;
+        background: linear-gradient(135deg, #fafafa 0%, #a1a1aa 100%);
+      }
+
+      .content {
+        padding: 24px 18px;
+      }
+
+      .hero-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 18px;
+        border-radius: 18px;
+        background-image: url("../icon-128.png");
+        background-position: center;
+        background-size: cover;
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.16);
+      }
+
+      .screen-title {
+        margin: 0;
+        text-align: center;
+        font-size: 19px;
+        line-height: 1.2;
+      }
+
+      .screen-sub {
+        width: 260px;
+        margin: 8px auto 22px;
+        text-align: center;
+        color: #64748b;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .dark .screen-sub {
+        color: #a1a1aa;
+      }
+
+      .drop {
+        height: 160px;
+        border: 2px dashed rgba(15, 23, 42, 0.14);
+        border-radius: 22px;
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+      }
+
+      .drop strong {
+        font-size: 16px;
+      }
+
+      .drop span {
+        color: #64748b;
+        font-size: 12px;
+      }
+
+      .note {
+        margin-top: 22px;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 12px;
+      }
+
+      .card {
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        border-radius: 22px;
+        background: #ffffff;
+        padding: 18px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        text-align: center;
+      }
+
+      .stat-label {
+        color: #64748b;
+        font-size: 12px;
+      }
+
+      .stat-value {
+        margin-top: 4px;
+        font-size: 24px;
+        font-weight: 800;
+      }
+
+      .file-list {
+        margin-top: 20px;
+      }
+
+      .file-list h3 {
+        margin: 0 0 10px;
+        color: #334155;
+        font-size: 12px;
+      }
+
+      .file {
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: #f8fafc;
+        color: #475569;
+        font-size: 12px;
+      }
+
+      .file + .file {
+        margin-top: 6px;
+      }
+
+      .primary {
+        width: 100%;
+        margin-top: 18px;
+        border: 0;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #f09433 0%, #dc2743 52%, #bc1888 100%);
+        color: #ffffff;
+        padding: 13px 16px;
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .big-stat {
+        border: 1px solid #27272a;
+        border-radius: 24px;
+        background: #18181b;
+        padding: 24px 18px;
+        text-align: center;
+      }
+
+      .number {
+        font-size: 58px;
+        font-weight: 900;
+        line-height: 1;
+        background: linear-gradient(135deg, #fafafa, #a1a1aa);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .big-stat strong {
+        display: block;
+        margin-top: 10px;
+        font-size: 15px;
+      }
+
+      .big-stat span {
+        display: block;
+        margin-top: 6px;
+        color: #a1a1aa;
+        font-size: 12px;
+      }
+
+      .rows {
+        margin-top: 16px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .row {
+        overflow: hidden;
+        border: 1px solid #27272a;
+        border-radius: 18px;
+        background: #18181b;
+      }
+
+      .row-main {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+      }
+
+      .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #27272a, #111113);
+        color: #d4d4d8;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+      }
+
+      .account {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .account strong {
+        display: block;
+        font-size: 14px;
+      }
+
+      .account span {
+        display: block;
+        margin-top: 2px;
+        color: #a1a1aa;
+        font-size: 12px;
+      }
+
+      .row-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border-top: 1px solid #27272a;
+      }
+
+      .row-actions div {
+        padding: 10px;
+        text-align: center;
+        color: #a1a1aa;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .row-actions div + div {
+        border-left: 1px solid #27272a;
+      }
+
+      .badge-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      .badge {
+        border-radius: 14px;
+        background: #18181b;
+        border: 1px solid #27272a;
+        color: #d4d4d8;
+        padding: 10px 12px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      html[lang='ko'] h1 {
+        font-size: 54px;
+        line-height: 1.12;
+        word-break: keep-all;
+      }
+
+      html[lang='ko'] .lead {
+        max-width: 520px;
+        font-size: 22px;
+        word-break: keep-all;
+      }
+
+      html[lang='ko'] .brand {
+        font-size: 16px;
+      }
+
+      html[lang='ko'] .screen-title {
+        font-size: 18px;
+        word-break: keep-all;
+      }
+
+      html[lang='ko'] .screen-sub {
+        word-break: keep-all;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="frame" id="frame"></main>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const locale = params.get("locale") === "ko" ? "ko" : "en";
+
+      document.documentElement.lang = locale;
+
+      const copy = {
+        en: {
+          appName: "Who Unfollowed Me?",
+          lang: "EN",
+          upload: {
+            eyebrow: "Local export analysis",
+            headline: "Review follow relationships without sharing your file.",
+            lead: "Use the official Threads or Instagram export you download yourself. Files are read in your browser and stay on your device.",
+            pills: ["No scraping", "No login access", "No server upload"],
+            title: "Upload your data file",
+            subtitle: "Pick the ZIP or JSON from Threads or Instagram.",
+            button: "Select file",
+            drop: "Drop file here or click",
+            note: "Files are read only inside your browser.",
+          },
+          preview: {
+            eyebrow: "Before applying",
+            headline: "Check what the export parser recognized.",
+            lead: "Review the following and followers counts before saving the local analysis result.",
+            pills: ["ZIP and JSON", "Recognized files", "Local storage only"],
+            following: "Following",
+            followers: "Followers",
+            recognized: "Recognized files",
+            button: "Apply to analysis",
+            note: "Files are parsed in your browser.",
+          },
+          results: {
+            eyebrow: "Manual review",
+            headline: "See accounts that may need a closer look.",
+            lead: "Open profiles, keep accounts you recognize, or hide items after you have reviewed them.",
+            pills: ["Open profiles", "Keep list", "Hide reviewed"],
+            stat: "Don't follow you back",
+            hint: "Accounts you follow that don't follow you.",
+            keep: "Keep",
+            hide: "Hide",
+          },
+        },
+        ko: {
+          appName: "누가 뒷삭했을까?",
+          lang: "한",
+          upload: {
+            eyebrow: "로컬 데이터 분석",
+            headline: "내 파일을 공유하지 않고 맞팔 관계를 확인하세요.",
+            lead: "직접 내려받은 Threads 또는 Instagram 공식 export 파일만 사용합니다. 파일은 브라우저 안에서만 읽습니다.",
+            pills: ["스크래핑 없음", "로그인 접근 없음", "서버 업로드 없음"],
+            title: "데이터 파일을 업로드하세요",
+            subtitle: "Threads 또는 Instagram에서 받은 ZIP / JSON 파일을 선택하세요.",
+            button: "파일 선택",
+            drop: "파일을 끌어두거나 클릭",
+            note: "파일은 브라우저 안에서만 처리됩니다.",
+          },
+          preview: {
+            eyebrow: "반영 전 확인",
+            headline: "파서가 인식한 파일을 먼저 확인하세요.",
+            lead: "저장하기 전에 팔로잉/팔로워 수와 인식된 파일을 확인할 수 있습니다.",
+            pills: ["ZIP 및 JSON", "인식한 파일", "로컬 저장만"],
+            following: "팔로잉",
+            followers: "팔로워",
+            recognized: "인식한 파일",
+            button: "분석에 반영",
+            note: "파일은 브라우저에서 파싱됩니다.",
+          },
+          results: {
+            eyebrow: "검토 목록",
+            headline: "확인이 필요한 계정을 한눈에 봅니다.",
+            lead: "프로필을 열어 확인하고, 유지할 계정은 남기거나 검토한 항목은 숨길 수 있습니다.",
+            pills: ["프로필 열기", "유지 목록", "검토 완료 숨김"],
+            stat: "맞팔하지 않는 계정",
+            hint: "내가 팔로우하지만 나를 팔로우하지 않는 계정.",
+            keep: "유지",
+            hide: "숨기기",
+          },
+        },
+      }[locale];
+
+      function pills(items) {
+        return items.map((item) => `<span class="pill">${item}</span>`).join("");
+      }
+
+      const panelTop = `
+        <div class="topbar">
+          <div class="brand"><span class="mark"></span><span class="brand-name">${copy.appName}</span></div>
+          <span class="lang">${copy.lang}</span>
+        </div>
+        <div class="tabs">
+          <div class="tab active">Threads</div>
+          <div class="tab">Instagram</div>
+        </div>
+      `;
+
+      const screens = {
+        upload: `
+          <section class="copy">
+            <p class="eyebrow">${copy.upload.eyebrow}</p>
+            <h1>${copy.upload.headline}</h1>
+            <p class="lead">${copy.upload.lead}</p>
+            <div class="pills">
+              ${pills(copy.upload.pills)}
+            </div>
+          </section>
+          <section class="panel">
+            ${panelTop}
+            <div class="content">
+              <div class="hero-icon"></div>
+              <h2 class="screen-title">${copy.upload.title}</h2>
+              <p class="screen-sub">${copy.upload.subtitle}</p>
+              <div class="drop">
+                <strong>${copy.upload.button}</strong>
+                <span>${copy.upload.drop}</span>
+              </div>
+              <p class="note">${copy.upload.note}</p>
+            </div>
+          </section>
+        `,
+        preview: `
+          <section class="copy">
+            <p class="eyebrow">${copy.preview.eyebrow}</p>
+            <h1>${copy.preview.headline}</h1>
+            <p class="lead">${copy.preview.lead}</p>
+            <div class="pills">
+              ${pills(copy.preview.pills)}
+            </div>
+          </section>
+          <section class="panel">
+            ${panelTop}
+            <div class="content">
+              <div class="card">
+                <div class="stats">
+                  <div>
+                    <div class="stat-label">${copy.preview.following}</div>
+                    <div class="stat-value">842</div>
+                  </div>
+                  <div>
+                    <div class="stat-label">${copy.preview.followers}</div>
+                    <div class="stat-value">719</div>
+                  </div>
+                </div>
+                <div class="file-list">
+                  <h3>${copy.preview.recognized}</h3>
+                  <div class="file">connections/followers_and_following/following.json</div>
+                  <div class="file">connections/followers_and_following/followers_1.json</div>
+                </div>
+                <button class="primary">${copy.preview.button}</button>
+              </div>
+              <p class="note">${copy.preview.note}</p>
+            </div>
+          </section>
+        `,
+        results: `
+          <section class="copy">
+            <p class="eyebrow">${copy.results.eyebrow}</p>
+            <h1>${copy.results.headline}</h1>
+            <p class="lead">${copy.results.lead}</p>
+            <div class="pills">
+              ${pills(copy.results.pills)}
+            </div>
+          </section>
+          <section class="panel dark">
+            ${panelTop}
+            <div class="content">
+              <div class="big-stat">
+                <div class="number">123</div>
+                <strong>${copy.results.stat}</strong>
+                <span>${copy.results.hint}</span>
+              </div>
+              <div class="rows">
+                <div class="row">
+                  <div class="row-main">
+                    <div class="avatar">D</div>
+                    <div class="account"><strong>design_notes</strong><span>@design_notes</span></div>
+                  </div>
+                  <div class="row-actions"><div>${copy.results.keep}</div><div>${copy.results.hide}</div></div>
+                </div>
+                <div class="row">
+                  <div class="row-main">
+                    <div class="avatar">C</div>
+                    <div class="account"><strong>code_daily</strong><span>@code_daily</span></div>
+                  </div>
+                  <div class="row-actions"><div>${copy.results.keep}</div><div>${copy.results.hide}</div></div>
+                </div>
+                <div class="row">
+                  <div class="row-main">
+                    <div class="avatar">M</div>
+                    <div class="account"><strong>maker_log</strong><span>@maker_log</span></div>
+                  </div>
+                  <div class="row-actions"><div>${copy.results.keep}</div><div>${copy.results.hide}</div></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        `,
+      };
+
+      const screen = params.get("screen") || "upload";
+      document.getElementById("frame").innerHTML = screens[screen] || screens.upload;
+    </script>
+  </body>
+</html>

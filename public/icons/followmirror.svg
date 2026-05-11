@@ -1,23 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
   <title id="title">FollowMirror icon</title>
   <defs>
-    <linearGradient id="bg" x1="96" y1="72" x2="416" y2="440" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#fb7185" />
-      <stop offset="0.52" stop-color="#be123c" />
+    <linearGradient id="bg" x1="38" y1="28" x2="474" y2="484" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff6b8a" />
+      <stop offset="0.45" stop-color="#c026d3" />
       <stop offset="1" stop-color="#0f172a" />
     </linearGradient>
-    <linearGradient id="shine" x1="102" y1="78" x2="320" y2="292" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.32" />
-      <stop offset="1" stop-color="#ffffff" stop-opacity="0" />
+    <linearGradient id="leftArc" x1="106" y1="136" x2="228" y2="382" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" />
+      <stop offset="1" stop-color="#f8fafc" stop-opacity="0.88" />
     </linearGradient>
+    <linearGradient id="rightArc" x1="286" y1="130" x2="408" y2="382" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#67e8f9" />
+      <stop offset="1" stop-color="#22d3ee" />
+    </linearGradient>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#020617" flood-opacity="0.28" />
+    </filter>
   </defs>
 
-  <rect width="512" height="512" fill="url(#bg)" />
-  <path d="M58 72h188c74 0 122 42 140 108l48 176c18 66-26 98-84 98H118c-70 0-112-42-92-116l48-178c12-46 46-88 112-88Z" fill="url(#shine)" />
-
-  <circle cx="238" cy="184" r="78" fill="#ffffff" />
-  <path d="M106 402c30-88 78-132 144-132 64 0 110 42 138 126 8 24-10 48-36 48H142c-26 0-44-18-36-42Z" fill="#ffffff" />
-  <circle cx="366" cy="154" r="82" fill="#0f172a" opacity="0.9" />
-  <circle cx="366" cy="154" r="58" fill="#22d3ee" />
-  <rect x="322" y="138" width="88" height="32" rx="16" fill="#0f172a" />
+  <rect width="512" height="512" rx="118" fill="url(#bg)" />
+  <path d="M92 94h192c72 0 126 40 146 106l30 98c22 72-30 120-104 120H132c-58 0-98-42-82-98l42-150c12-44 46-76 98-76Z" fill="#ffffff" opacity="0.12" />
+  <path d="M220 132c-64 10-112 62-112 124s48 114 112 124" fill="none" stroke="url(#leftArc)" stroke-width="48" stroke-linecap="round" filter="url(#softShadow)" />
+  <path d="M292 132c64 10 112 62 112 124s-48 114-112 124" fill="none" stroke="url(#rightArc)" stroke-width="48" stroke-linecap="round" filter="url(#softShadow)" />
+  <path d="M256 116v280" stroke="#ffffff" stroke-width="18" stroke-linecap="round" opacity="0.44" />
+  <circle cx="220" cy="132" r="23" fill="#ffffff" />
+  <circle cx="292" cy="380" r="23" fill="#67e8f9" />
+  <circle cx="256" cy="256" r="48" fill="#f8fafc" />
+  <path d="M232 256h48" stroke="#0f172a" stroke-width="17" stroke-linecap="round" />
 </svg>

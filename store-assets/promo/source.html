@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FollowMirror Promo</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background: #f8fafc;
+      }
+
+      .tile {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background:
+          radial-gradient(circle at 16% 18%, rgba(220, 39, 67, 0.16), transparent 28%),
+          radial-gradient(circle at 86% 24%, rgba(34, 211, 238, 0.18), transparent 32%),
+          linear-gradient(135deg, #ffffff, #eef2f7);
+      }
+
+      .mark {
+        width: min(28vw, 256px);
+        height: min(28vw, 256px);
+        border-radius: 24%;
+        background-image: url("../icon-128.png");
+        background-position: center;
+        background-size: cover;
+        box-shadow: 0 30px 80px rgba(15, 23, 42, 0.2);
+        position: relative;
+        z-index: 2;
+      }
+
+      .card {
+        position: absolute;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 26px;
+        background: rgba(255, 255, 255, 0.72);
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+      }
+
+      .card.left {
+        width: 300px;
+        height: 176px;
+        left: 12%;
+        top: 18%;
+      }
+
+      .card.right {
+        width: 334px;
+        height: 210px;
+        right: 10%;
+        bottom: 16%;
+      }
+
+      .line {
+        position: absolute;
+        height: 12px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.1);
+      }
+
+      .left .line:nth-child(1) {
+        width: 42%;
+        left: 28px;
+        top: 34px;
+      }
+
+      .left .line:nth-child(2) {
+        width: 70%;
+        left: 28px;
+        top: 68px;
+      }
+
+      .left .line:nth-child(3) {
+        width: 56%;
+        left: 28px;
+        top: 102px;
+      }
+
+      .right .line:nth-child(1) {
+        width: 62%;
+        right: 30px;
+        top: 42px;
+      }
+
+      .right .line:nth-child(2) {
+        width: 76%;
+        right: 30px;
+        top: 84px;
+      }
+
+      .right .line:nth-child(3) {
+        width: 44%;
+        right: 30px;
+        top: 126px;
+      }
+
+      .chip {
+        position: absolute;
+        width: 118px;
+        height: 38px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #f97316, #d61f85);
+        box-shadow: 0 18px 40px rgba(214, 31, 133, 0.18);
+      }
+
+      .chip.one {
+        left: 19%;
+        bottom: 22%;
+      }
+
+      .chip.two {
+        right: 22%;
+        top: 20%;
+        background: linear-gradient(135deg, #22d3ee, #a855f7);
+      }
+
+      .tile.small .card,
+      .tile.small .chip {
+        display: none;
+      }
+
+      .tile.small .mark {
+        width: 132px;
+        height: 132px;
+        border-radius: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="tile" id="tile">
+      <section class="card left" aria-hidden="true">
+        <span class="line"></span>
+        <span class="line"></span>
+        <span class="line"></span>
+      </section>
+      <div class="chip one" aria-hidden="true"></div>
+      <div class="mark" aria-hidden="true"></div>
+      <div class="chip two" aria-hidden="true"></div>
+      <section class="card right" aria-hidden="true">
+        <span class="line"></span>
+        <span class="line"></span>
+        <span class="line"></span>
+      </section>
+    </main>
+    <script>
+      if (new URLSearchParams(window.location.search).get("size") === "small") {
+        document.getElementById("tile").classList.add("small");
+      }
+    </script>
+  </body>
+</html>
+
