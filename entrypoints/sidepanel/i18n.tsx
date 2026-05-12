@@ -62,6 +62,13 @@ interface Dict {
     reupload: string;
     resetData: string;
   };
+  support: {
+    ctaTitle: string;
+    ctaBody: string;
+    koFiButton: string;
+    paypalButton: string;
+    optionalNote: string;
+  };
   notice: {
     filesParsed: string;
     applied: string;
@@ -133,6 +140,13 @@ const en: Dict = {
     reupload: 'Upload new data',
     resetData: 'Clear stored data',
   },
+  support: {
+    ctaTitle: 'Support development',
+    ctaBody: 'This tool is free. If it helped, you can support ongoing maintenance.',
+    koFiButton: 'Support on Ko-fi',
+    paypalButton: 'Support with PayPal',
+    optionalNote: 'Payments open on an external site. This extension does not process payment information.',
+  },
   notice: {
     filesParsed: 'File loaded. Apply to add it to the analysis.',
     applied: 'Applied to analysis.',
@@ -203,6 +217,13 @@ const ko: Dict = {
     zeroBody: '내가 팔로우하는 모든 계정이 나를 팔로우하고 있어요.',
     reupload: '새 데이터 업로드',
     resetData: '저장된 데이터 초기화',
+  },
+  support: {
+    ctaTitle: '개발 후원',
+    ctaBody: '이 도구는 무료입니다. 도움이 됐다면 유지보수를 후원할 수 있어요.',
+    koFiButton: 'Ko-fi로 후원',
+    paypalButton: 'PayPal로 후원',
+    optionalNote: '결제는 외부 사이트에서 열립니다. 이 확장 프로그램은 결제 정보를 처리하지 않습니다.',
   },
   notice: {
     filesParsed: '파일을 읽었어요. 반영 버튼을 눌러 분석에 적용하세요.',

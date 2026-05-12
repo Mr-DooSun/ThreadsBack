@@ -32,6 +32,12 @@ const HELP_LINKS = {
   instagram: 'https://www.facebook.com/help/instagram/181231772500920',
 };
 
+// PayPal can be added later if a separate direct support link is needed.
+const SUPPORT_LINKS = {
+  koFi: 'https://ko-fi.com/mrdoosun',
+  paypal: '',
+};
+
 const PLATFORM_STORAGE_KEY = 'wum.platform';
 const DEFAULT_PLATFORM: Platform = 'threads';
 const APP_ICON_URL = browser.runtime.getURL('/icons/128.png');
@@ -498,6 +504,82 @@ function SafetyNote() {
   );
 }
 
+function SupportCta() {
+  const { t } = useI18n();
+  const hasSupportLink = Boolean(SUPPORT_LINKS.koFi || SUPPORT_LINKS.paypal);
+
+  if (!hasSupportLink) return null;
+
+  return (
+    <section className="rounded-2xl border themed-border bg-[var(--bg-soft)] p-3">
+      <div className="space-y-1 text-center">
+        <p className="text-xs font-semibold text-strong">
+          {t.support.ctaTitle}
+        </p>
+        <p className="mx-auto max-w-[18rem] text-[11px] leading-relaxed text-muted">
+          {t.support.ctaBody}
+        </p>
+      </div>
+      <div className="grid gap-2">
+        {SUPPORT_LINKS.koFi && (
+          <SupportLinkButton url={SUPPORT_LINKS.koFi} className="mt-3">
+            {t.support.koFiButton}
+          </SupportLinkButton>
+        )}
+        {SUPPORT_LINKS.paypal && (
+          <SupportLinkButton
+            url={SUPPORT_LINKS.paypal}
+            className="mt-3"
+            secondary
+          >
+            {t.support.paypalButton}
+          </SupportLinkButton>
+        )}
+      </div>
+      <p className="mt-2 text-center text-[10px] leading-relaxed text-subtle">
+        {t.support.optionalNote}
+      </p>
+    </section>
+  );
+}
+
+function SupportLinkButton({
+  url,
+  className = '',
+  secondary = false,
+  children,
+}: {
+  url: string;
+  className?: string;
+  secondary?: boolean;
+  children: ReactNode;
+}) {
+  const isAvailable = url.length > 0;
+
+  function openSupportLink() {
+    if (!isAvailable) return;
+    void browser.tabs.create({ url });
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={openSupportLink}
+      disabled={!isAvailable}
+      className={
+        'flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold shadow-sm transition-all disabled:cursor-not-allowed disabled:opacity-45 ' +
+        (secondary
+          ? 'themed-card border themed-border text-default hover:shadow-md'
+          : 'btn-primary hover:shadow-md') +
+        (className ? ` ${className}` : '')
+      }
+    >
+      <span>{children}</span>
+      {isAvailable && <ExternalLinkIcon />}
+    </button>
+  );
+}
+
 function HeroIcon() {
   return (
     <img
@@ -618,6 +700,8 @@ function ResultsView({
           )}
         </div>
       </Disclosure>
+
+      <SupportCta />
 
       <div className="pt-2 text-center">
         <button
