@@ -436,6 +436,8 @@ function UploadView({
         </p>
       </div>
 
+      <SafetyNote />
+
       <UploadDropzone
         status={status}
         inputRef={inputRef}
@@ -469,6 +471,29 @@ function UploadView({
       <p className="text-center text-[11px] text-subtle">
         {t.upload.privacyNote}
       </p>
+    </section>
+  );
+}
+
+function SafetyNote() {
+  const { t } = useI18n();
+
+  return (
+    <section className="rounded-2xl border themed-border bg-[var(--accent-soft-bg)] p-4">
+      <h3 className="text-sm font-semibold text-strong">
+        {t.upload.safetyTitle}
+      </h3>
+      <ul className="mt-2 space-y-1.5 text-[11px] leading-relaxed text-muted">
+        {t.upload.safetyItems.map((item) => (
+          <li key={item} className="flex gap-2">
+            <span
+              aria-hidden
+              className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-50"
+            />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -521,6 +546,10 @@ function ResultsView({
   return (
     <section className="space-y-4 px-4 pb-8 pt-4">
       <HeroStat count={reviewCount} />
+
+      <p className="rounded-xl border themed-border bg-[var(--bg-soft)] px-3 py-2 text-[11px] leading-relaxed text-muted">
+        {t.result.safetyNote}
+      </p>
 
       {reviewCount === 0 ? (
         <ZeroState />

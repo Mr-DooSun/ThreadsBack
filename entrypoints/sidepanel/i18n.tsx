@@ -21,6 +21,8 @@ interface Dict {
   upload: {
     heroTitle: string;
     heroSubtitle: string;
+    safetyTitle: string;
+    safetyItems: readonly string[];
     selectButton: string;
     reuploadButton: string;
     dropHere: string;
@@ -46,6 +48,7 @@ interface Dict {
   result: {
     statLabel: string;
     statHint: string;
+    safetyNote: string;
     profile: string;
     openOn: string;
     keep: string;
@@ -80,6 +83,13 @@ const en: Dict = {
   upload: {
     heroTitle: 'Upload your data file',
     heroSubtitle: 'Pick the ZIP or JSON from Threads or Instagram.',
+    safetyTitle: 'Safe by design',
+    safetyItems: [
+      'No login, password, cookies, or access tokens.',
+      'No scraping, auto-scrolling, or internal API access.',
+      'Automated unfollowing is not provided because it can create policy and account restriction risks.',
+      'You review profiles yourself before taking any action.',
+    ],
     selectButton: 'Select file',
     reuploadButton: 'Upload again',
     dropHere: 'Drop file here or click',
@@ -109,6 +119,7 @@ const en: Dict = {
   result: {
     statLabel: "Don't follow you back",
     statHint: "Accounts you follow that don't follow you.",
+    safetyNote: 'To reduce policy and account restriction risks, this extension only helps you review accounts. It never follows, unfollows, or changes your Threads or Instagram account.',
     profile: 'Open profile',
     openOn: 'Open on',
     keep: 'Keep',
@@ -143,6 +154,13 @@ const ko: Dict = {
   upload: {
     heroTitle: '데이터 파일을 업로드하세요',
     heroSubtitle: 'Threads 또는 Instagram에서 받은 ZIP / JSON 파일을 선택하세요.',
+    safetyTitle: '계정에 손대지 않아요',
+    safetyItems: [
+      '로그인 정보, 쿠키, 토큰을 요구하거나 읽지 않습니다.',
+      '스크래핑, 자동 스크롤, 내부 API 접근을 하지 않습니다.',
+      '자동 언팔로우는 정책 위반과 계정 제한 리스크가 있어 제공하지 않습니다.',
+      '프로필을 직접 확인하고 최종 판단은 사용자가 합니다.',
+    ],
     selectButton: '파일 선택',
     reuploadButton: '다시 업로드',
     dropHere: '파일을 끌어두거나 클릭',
@@ -172,6 +190,7 @@ const ko: Dict = {
   result: {
     statLabel: '맞팔하지 않는 계정',
     statHint: '내가 팔로우하지만 나를 팔로우하지 않는 계정.',
+    safetyNote: '정책 위반과 계정 제한 리스크를 줄이기 위해, 이 확장 프로그램은 확인을 돕기만 합니다. Threads 또는 Instagram 계정의 팔로우 상태를 대신 변경하지 않습니다.',
     profile: '프로필',
     openOn: '프로필 열기',
     keep: '유지',
