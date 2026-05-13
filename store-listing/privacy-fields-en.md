@@ -8,7 +8,7 @@ This extension lets users compare their own Threads or Instagram following and f
 
 ### storage
 
-Used to save the local analysis result, reviewed accounts, language preference, and selected platform preference in Chrome local storage.
+Used to save the local analysis result, reviewed accounts, language preference, selected platform preference, and profile opening preference in Chrome local storage.
 
 ### sidePanel
 

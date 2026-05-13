@@ -27,6 +27,7 @@ import { I18nProvider, useI18n, type Locale } from './i18n';
 
 type ImportStatus = 'idle' | 'parsing' | 'ready' | 'error';
 type Platform = 'threads' | 'instagram';
+type ProfileOpenMode = 'currentTab' | 'newTab';
 
 const HELP_LINKS = {
   accountsCenter:
@@ -40,7 +41,9 @@ const SUPPORT_LINKS = {
 };
 
 const PLATFORM_STORAGE_KEY = 'wum.platform';
+const PROFILE_OPEN_MODE_STORAGE_KEY = 'wum.profileOpenMode';
 const DEFAULT_PLATFORM: Platform = 'threads';
+const DEFAULT_PROFILE_OPEN_MODE: ProfileOpenMode = 'currentTab';
 const APP_ICON_URL = browser.runtime.getURL('/icons/128.png');
 
 function buildProfileUrl(username: string, platform: Platform): string {
@@ -57,6 +60,16 @@ function detectInitialPlatform(): Platform {
     // ignore
   }
   return DEFAULT_PLATFORM;
+}
+
+function detectInitialProfileOpenMode(): ProfileOpenMode {
+  try {
+    const stored = localStorage.getItem(PROFILE_OPEN_MODE_STORAGE_KEY);
+    if (stored === 'currentTab' || stored === 'newTab') return stored;
+  } catch {
+    // ignore
+  }
+  return DEFAULT_PROFILE_OPEN_MODE;
 }
 
 function detectPlatformFromFiles(paths: readonly string[]): Platform | null {
@@ -91,6 +104,8 @@ function AppShell() {
   const [showHowTo, setShowHowTo] = useState(false);
   const [reuploadOpen, setReuploadOpen] = useState(false);
   const [platform, setPlatformState] = useState<Platform>(DEFAULT_PLATFORM);
+  const [profileOpenMode, setProfileOpenModeState] =
+    useState<ProfileOpenMode>(DEFAULT_PROFILE_OPEN_MODE);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const analysis = useMemo(
@@ -100,6 +115,7 @@ function AppShell() {
 
   useEffect(() => {
     setPlatformState(detectInitialPlatform());
+    setProfileOpenModeState(detectInitialProfileOpenMode());
   }, []);
 
   useEffect(() => {
@@ -121,6 +137,15 @@ function AppShell() {
     setPlatformState(next);
     try {
       localStorage.setItem(PLATFORM_STORAGE_KEY, next);
+    } catch {
+      // ignore
+    }
+  }
+
+  function setProfileOpenMode(next: ProfileOpenMode) {
+    setProfileOpenModeState(next);
+    try {
+      localStorage.setItem(PROFILE_OPEN_MODE_STORAGE_KEY, next);
     } catch {
       // ignore
     }
@@ -254,6 +279,8 @@ function AppShell() {
       ) : (
         <ResultsView
           analysis={analysis}
+          profileOpenMode={profileOpenMode}
+          onProfileOpenModeChange={setProfileOpenMode}
           reuploadOpen={reuploadOpen}
           onToggleReupload={() => setReuploadOpen((prev) => !prev)}
           status={importStatus}
@@ -595,6 +622,8 @@ function HeroIcon() {
 
 function ResultsView({
   analysis,
+  profileOpenMode,
+  onProfileOpenModeChange,
   reuploadOpen,
   onToggleReupload,
   status,
@@ -608,6 +637,8 @@ function ResultsView({
   platform,
 }: {
   analysis: NonNullable<ReturnType<typeof analyzeRelationships>>;
+  profileOpenMode: ProfileOpenMode;
+  onProfileOpenModeChange: (next: ProfileOpenMode) => void;
   reuploadOpen: boolean;
   onToggleReupload: () => void;
   status: ImportStatus;
@@ -626,6 +657,10 @@ function ResultsView({
   return (
     <section className="space-y-4 px-4 pb-8 pt-4">
       <HeroStat count={reviewCount} />
+      <ProfileOpenModeControl
+        mode={profileOpenMode}
+        onChange={onProfileOpenModeChange}
+      />
 
       <p className="rounded-xl border themed-border bg-[var(--bg-soft)] px-3 py-2 text-[11px] leading-relaxed text-muted">
         {t.result.safetyNote}
@@ -640,6 +675,7 @@ function ResultsView({
               key={account.username}
               account={account}
               platform={platform}
+              profileOpenMode={profileOpenMode}
               onToggleReviewed={onToggleReviewed}
             />
           ))}
@@ -687,6 +723,65 @@ function ResultsView({
         </button>
       </div>
     </section>
+  );
+}
+
+function ProfileOpenModeControl({
+  mode,
+  onChange,
+}: {
+  mode: ProfileOpenMode;
+  onChange: (next: ProfileOpenMode) => void;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <section className="themed-card rounded-2xl border p-3 shadow-sm">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-[11px] font-semibold text-muted">
+          {t.result.profileOpenModeLabel}
+        </p>
+        <div
+          role="group"
+          aria-label={t.result.profileOpenModeLabel}
+          className="grid grid-cols-2 gap-1 rounded-full themed-soft p-1 text-[11px] font-semibold"
+        >
+          <ModeButton
+            active={mode === 'currentTab'}
+            onClick={() => onChange('currentTab')}
+          >
+            {t.result.profileOpenCurrentTab}
+          </ModeButton>
+          <ModeButton active={mode === 'newTab'} onClick={() => onChange('newTab')}>
+            {t.result.profileOpenNewTab}
+          </ModeButton>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ModeButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={
+        'rounded-full px-3 py-1.5 transition-all ' +
+        (active ? 'tab-active shadow-sm' : 'text-muted hover:text-strong')
+      }
+    >
+      {children}
+    </button>
   );
 }
 
@@ -1858,18 +1953,39 @@ function FileSummary({
 function AccountRow({
   account,
   platform,
+  profileOpenMode,
   onToggleReviewed,
 }: {
   account: Account;
   platform: Platform;
+  profileOpenMode: ProfileOpenMode;
   onToggleReviewed: (username: string) => void;
 }) {
   const { t } = useI18n();
 
-  function openProfile() {
-    void browser.tabs.create({
-      url: buildProfileUrl(account.username, platform),
-    });
+  async function openProfile() {
+    const url = buildProfileUrl(account.username, platform);
+
+    if (profileOpenMode === 'newTab') {
+      await browser.tabs.create({ url });
+      return;
+    }
+
+    try {
+      const [activeTab] = await browser.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+
+      if (typeof activeTab?.id === 'number') {
+        await browser.tabs.update(activeTab.id, { url });
+        return;
+      }
+
+      await browser.tabs.update({ url });
+    } catch {
+      await browser.tabs.create({ url });
+    }
   }
 
   function handleAction(
@@ -1884,7 +2000,7 @@ function AccountRow({
     <li className="themed-card group overflow-hidden rounded-xl border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
       <button
         type="button"
-        onClick={openProfile}
+        onClick={() => void openProfile()}
         className="flex w-full items-center gap-3 px-3.5 py-3.5 text-left"
         aria-label={`${t.result.profile} @${account.username}`}
       >

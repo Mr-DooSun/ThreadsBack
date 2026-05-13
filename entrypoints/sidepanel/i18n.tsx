@@ -76,6 +76,9 @@ interface Dict {
     safetyNote: string;
     profile: string;
     openOn: string;
+    profileOpenModeLabel: string;
+    profileOpenCurrentTab: string;
+    profileOpenNewTab: string;
     hide: string;
     hideHint: string;
     hiddenSummary: (n: number) => string;
@@ -281,6 +284,9 @@ const en: Dict = {
     safetyNote: 'To reduce policy and account restriction risks, this extension only helps you review accounts. It never follows, unfollows, or changes your Threads or Instagram account.',
     profile: 'Open profile',
     openOn: 'Open on',
+    profileOpenModeLabel: 'Open profiles in',
+    profileOpenCurrentTab: 'Current tab',
+    profileOpenNewTab: 'New tab',
     hide: 'Reviewed',
     hideHint: 'Mark as handled',
     hiddenSummary: (n) => `${n.toLocaleString()} reviewed`,
@@ -491,6 +497,9 @@ const ko: Dict = {
     safetyNote: '정책 위반과 계정 제한 리스크를 줄이기 위해, 이 확장 프로그램은 확인을 돕기만 합니다. Threads 또는 Instagram 계정의 팔로우 상태를 대신 변경하지 않습니다.',
     profile: '프로필',
     openOn: '프로필 열기',
+    profileOpenModeLabel: '프로필 열기 방식',
+    profileOpenCurrentTab: '현재 탭',
+    profileOpenNewTab: '새 탭',
     hide: '검토 완료',
     hideHint: '언팔했거나 더 볼 필요 없음',
     hiddenSummary: (n) => `검토 완료한 계정 ${n.toLocaleString()}개`,

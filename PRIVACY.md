@@ -18,7 +18,7 @@ The extension does not collect passwords, authentication tokens, cookies, paymen
 
 The selected export file is parsed locally in the browser to compare following and followers lists. The extension uses this information to show accounts the user follows that do not appear in the followers export.
 
-The extension may save parsed account usernames, profile links, reviewed account states, selected platform preference, and language preference in Chrome local storage so the user can continue reviewing later.
+The extension may save parsed account usernames, profile links, reviewed account states, selected platform preference, profile opening preference, and language preference in Chrome local storage so the user can continue reviewing later.
 
 ## Data Sharing
 
@@ -64,7 +64,7 @@ For questions about this privacy policy, contact the developer through the Chrom
 
 선택한 export 파일은 브라우저 안에서 로컬로 파싱되며, 팔로잉 목록과 팔로워 목록을 비교하는 데 사용됩니다. 확장 프로그램은 이 정보를 사용해 사용자가 팔로우하지만 팔로워 export에는 없는 계정을 보여줍니다.
 
-확장 프로그램은 사용자가 나중에 이어서 검토할 수 있도록 파싱된 계정 username, 프로필 링크, 검토 완료 상태, 선택한 플랫폼 설정, 언어 설정을 Chrome 로컬 저장소에 저장할 수 있습니다.
+확장 프로그램은 사용자가 나중에 이어서 검토할 수 있도록 파싱된 계정 username, 프로필 링크, 검토 완료 상태, 선택한 플랫폼 설정, 프로필 열기 설정, 언어 설정을 Chrome 로컬 저장소에 저장할 수 있습니다.
 
 ## 데이터 공유
 
