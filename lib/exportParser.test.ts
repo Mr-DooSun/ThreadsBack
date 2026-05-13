@@ -96,11 +96,12 @@ describe('export parser', () => {
           content: '<html></html>',
         },
       ]),
-    ).toThrow('JSON 형식의 공식 export 파일인지 확인해 주세요');
+    ).toThrow('HTML export는 v1에서 지원하지 않습니다');
   });
 
   it('parses zip files from browser File input', async () => {
     const zip = new JSZip();
+    zip.file('profile/profile.json', JSON.stringify({ username: 'ignored' }));
     zip.file(
       'connections/followers_and_following/followers_1.json',
       JSON.stringify([relationshipEntry('alpha')]),
@@ -120,6 +121,20 @@ describe('export parser', () => {
 
     expect(result.followers.map((account) => account.username)).toEqual(['alpha']);
     expect(result.following.map((account) => account.username)).toEqual(['beta']);
+    expect(result.skippedFiles).toEqual([]);
+  });
+
+  it('returns a clear error when a zip has no relationship files', async () => {
+    const zip = new JSZip();
+    zip.file('profile/profile.json', JSON.stringify({ username: 'alpha' }));
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const file = new File([blob], 'instagram-export.zip', {
+      type: 'application/zip',
+    });
+
+    await expect(parseExportFiles([file])).rejects.toThrow(
+      'ZIP 안에서 팔로워/팔로잉 JSON 파일을 찾지 못했습니다',
+    );
   });
 
   it('handles a large generated export', () => {

@@ -29,7 +29,8 @@ export class ExportParseError extends Error {
 const JSON_EXTENSION = /\.json$/i;
 const ZIP_EXTENSION = /\.zip$/i;
 const HTML_EXTENSION = /\.html?$/i;
-const EXPORT_FILE_SIZE_LIMIT_BYTES = 50 * 1024 * 1024;
+const JSON_FILE_SIZE_LIMIT_BYTES = 100 * 1024 * 1024;
+const ZIP_FILE_SIZE_LIMIT_BYTES = 500 * 1024 * 1024;
 
 export async function parseExportFiles(files: File[]): Promise<ExportParseResult> {
   if (files.length === 0) {
@@ -40,20 +41,32 @@ export async function parseExportFiles(files: File[]): Promise<ExportParseResult
   const skippedFiles: ExportSkippedFile[] = [];
 
   for (const file of files) {
-    if (file.size > EXPORT_FILE_SIZE_LIMIT_BYTES) {
-      skippedFiles.push({
-        name: file.name,
-        reason: '파일이 50MB를 넘어 건너뛰었습니다.',
-      });
-      continue;
-    }
-
     if (ZIP_EXTENSION.test(file.name)) {
-      entries.push(...(await readZipEntries(file)));
+      if (file.size > ZIP_FILE_SIZE_LIMIT_BYTES) {
+        skippedFiles.push({
+          name: file.name,
+          reason:
+            'ZIP 파일이 500MB를 넘어 브라우저에서 안전하게 처리하지 않았습니다. Meta에서 팔로워/팔로잉 정보만 JSON으로 다시 요청해 주세요.',
+        });
+        continue;
+      }
+
+      const zipResult = await readZipEntries(file);
+      entries.push(...zipResult.entries);
+      skippedFiles.push(...zipResult.skippedFiles);
       continue;
     }
 
     if (JSON_EXTENSION.test(file.name)) {
+      if (file.size > JSON_FILE_SIZE_LIMIT_BYTES) {
+        skippedFiles.push({
+          name: file.name,
+          reason:
+            'JSON 파일이 100MB를 넘어 브라우저에서 안전하게 처리하지 않았습니다. 팔로워/팔로잉 항목만 다시 내려받아 주세요.',
+        });
+        continue;
+      }
+
       entries.push({
         name: file.name,
         content: await file.text(),
@@ -158,6 +171,10 @@ export function parseExportEntries(
   };
 
   if (result.following.length === 0 && result.followers.length === 0) {
+    if (skippedFiles.length > 0) {
+      throw new ExportParseError(skippedFiles[0].reason);
+    }
+
     throw new ExportParseError(
       '팔로워/팔로잉 데이터를 찾지 못했습니다. JSON 형식의 공식 export 파일인지 확인해 주세요.',
     );
@@ -166,13 +183,30 @@ export function parseExportEntries(
   return result;
 }
 
-async function readZipEntries(file: File): Promise<ExportParseEntry[]> {
-  const zip = await JSZip.loadAsync(await file.arrayBuffer());
+async function readZipEntries(file: File): Promise<{
+  entries: ExportParseEntry[];
+  skippedFiles: ExportSkippedFile[];
+}> {
+  let zip: JSZip;
+  try {
+    zip = await JSZip.loadAsync(await file.arrayBuffer());
+  } catch {
+    return {
+      entries: [],
+      skippedFiles: [
+        {
+          name: file.name,
+          reason: 'ZIP 파일을 열지 못했습니다. Meta에서 받은 원본 ZIP 파일인지 확인해 주세요.',
+        },
+      ],
+    };
+  }
+
   const entries: ExportParseEntry[] = [];
 
   for (const [name, zipEntry] of Object.entries(zip.files)) {
     if (zipEntry.dir) continue;
-    if (!JSON_EXTENSION.test(name) && !HTML_EXTENSION.test(name)) continue;
+    if (!isRelationshipCandidatePath(name)) continue;
 
     entries.push({
       name,
@@ -180,7 +214,37 @@ async function readZipEntries(file: File): Promise<ExportParseEntry[]> {
     });
   }
 
-  return entries;
+  if (entries.length === 0) {
+    return {
+      entries,
+      skippedFiles: [
+        {
+          name: file.name,
+          reason:
+            'ZIP 안에서 팔로워/팔로잉 JSON 파일을 찾지 못했습니다. JSON 형식으로 팔로워/팔로잉 정보를 포함해 다시 요청해 주세요.',
+        },
+      ],
+    };
+  }
+
+  return { entries, skippedFiles: [] };
+}
+
+function isRelationshipCandidatePath(name: string): boolean {
+  const lowerName = name.toLowerCase();
+  const basename = lowerName.split('/').at(-1) ?? lowerName;
+
+  if (!JSON_EXTENSION.test(lowerName) && !HTML_EXTENSION.test(lowerName)) {
+    return false;
+  }
+
+  return (
+    /following|relationships_following/.test(basename) ||
+    /followers?(_\d+)?\.(json|html?)$/.test(basename) ||
+    lowerName.includes('followers_and_following') ||
+    lowerName.includes('relationships_following') ||
+    lowerName.includes('relationships_followers')
+  );
 }
 
 function parseJson(entry: ExportParseEntry):
