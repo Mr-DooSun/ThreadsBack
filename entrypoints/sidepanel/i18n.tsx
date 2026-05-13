@@ -56,6 +56,7 @@ interface Dict {
     howToSteps: Record<GuidePlatform, readonly GuideStep[]>;
     howToFooterNote: string;
     accountsCenterExport: string;
+    accountsCenterExportHint: string;
     statusIdle: string;
     statusParsing: string;
     statusReady: string;
@@ -267,6 +268,7 @@ const en: Dict = {
     },
     howToFooterNote: 'Screens may vary by account or language. The important part is the ZIP or JSON file, not a screenshot or link.',
     accountsCenterExport: 'Open Meta Accounts Center export',
+    accountsCenterExportHint: 'This opens Meta in a new tab. Use it to create or download your export, then return here.',
     statusIdle: 'Waiting',
     statusParsing: 'Reading…',
     statusReady: 'Ready',
@@ -483,6 +485,7 @@ const ko: Dict = {
     },
     howToFooterNote: '계정이나 언어에 따라 화면은 조금 다를 수 있습니다. 중요한 건 스크린샷이나 링크가 아니라 ZIP 또는 JSON 파일입니다.',
     accountsCenterExport: 'Meta Accounts Center 내보내기 열기',
+    accountsCenterExportHint: '새 탭에서 Meta를 엽니다. 내보내기를 만들거나 ZIP을 내려받은 뒤 다시 돌아오세요.',
     statusIdle: '대기',
     statusParsing: '읽는 중',
     statusReady: '읽기 완료',
@@ -699,6 +702,7 @@ const ja: Dict = {
     },
     howToFooterNote: 'アカウントや言語によって画面は少し異なる場合があります。重要なのはスクリーンショットやリンクではなく、ZIPまたはJSONファイルです。',
     accountsCenterExport: 'Metaアカウントセンターのエクスポートを開く',
+    accountsCenterExportHint: '新しいタブでMetaを開きます。エクスポートの作成やZIPのダウンロード後、この画面に戻ってください。',
     statusIdle: '待機中',
     statusParsing: '読み込み中',
     statusReady: '読み込み完了',

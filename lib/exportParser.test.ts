@@ -115,6 +115,63 @@ describe('export parser', () => {
     expect(result.platformHints).toEqual(['threads']);
   });
 
+  it('uses the preferred platform when one export contains both platforms', () => {
+    const result = parseExportEntries(
+      [
+        {
+          name: 'connections/followers_and_following/followers_1.json',
+          content: JSON.stringify([
+            relationshipEntry('instagram_follower'),
+          ]),
+        },
+        {
+          name: 'connections/followers_and_following/following.json',
+          content: JSON.stringify({
+            relationships_following: [
+              relationshipEntry('instagram_following'),
+            ],
+          }),
+        },
+        {
+          name: 'your_instagram_activity/threads/followers.json',
+          content: JSON.stringify({
+            text_post_app_text_post_app_followers: [
+              relationshipEntry(
+                'thread_follower',
+                'https://www.threads.net/@thread_follower',
+              ),
+            ],
+          }),
+        },
+        {
+          name: 'your_instagram_activity/threads/following.json',
+          content: JSON.stringify({
+            text_post_app_text_post_app_following: [
+              relationshipEntry(
+                'thread_following',
+                'https://www.threads.net/@thread_following',
+              ),
+            ],
+          }),
+        },
+      ],
+      [],
+      { preferredPlatform: 'threads' },
+    );
+
+    expect(result.platformHints).toEqual(['threads']);
+    expect(result.followers.map((account) => account.username)).toEqual([
+      'thread_follower',
+    ]);
+    expect(result.following.map((account) => account.username)).toEqual([
+      'thread_following',
+    ]);
+    expect(result.recognizedFiles).toEqual([
+      'your_instagram_activity/threads/followers.json',
+      'your_instagram_activity/threads/following.json',
+    ]);
+  });
+
   it('detects Threads relationship keys even when single files have no path or href', () => {
     const result = parseExportEntries([
       {
@@ -247,6 +304,56 @@ describe('export parser', () => {
       'thread_following',
     ]);
     expect(result.skippedFiles).toEqual([]);
+  });
+
+  it('filters mixed zip exports to the preferred platform', async () => {
+    const zip = new JSZip();
+    zip.file(
+      'connections/followers_and_following/followers_1.json',
+      JSON.stringify([relationshipEntry('instagram_follower')]),
+    );
+    zip.file(
+      'connections/followers_and_following/following.json',
+      JSON.stringify({
+        relationships_following: [relationshipEntry('instagram_following')],
+      }),
+    );
+    zip.file(
+      'your_instagram_activity/threads/followers.json',
+      JSON.stringify({
+        text_post_app_text_post_app_followers: [
+          relationshipEntry('thread_follower', 'https://www.threads.net/@thread_follower'),
+        ],
+      }),
+    );
+    zip.file(
+      'your_instagram_activity/threads/following.json',
+      JSON.stringify({
+        text_post_app_text_post_app_following: [
+          relationshipEntry('thread_following', 'https://www.threads.net/@thread_following'),
+        ],
+      }),
+    );
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const file = new File([blob], 'combined-export.zip', {
+      type: 'application/zip',
+    });
+
+    const result = await parseExportFiles([file], {
+      preferredPlatform: 'instagram',
+    });
+
+    expect(result.platformHints).toEqual(['instagram']);
+    expect(result.followers.map((account) => account.username)).toEqual([
+      'instagram_follower',
+    ]);
+    expect(result.following.map((account) => account.username)).toEqual([
+      'instagram_following',
+    ]);
+    expect(result.recognizedFiles).toEqual([
+      'connections/followers_and_following/followers_1.json',
+      'connections/followers_and_following/following.json',
+    ]);
   });
 
   it('returns a clear error when a zip has no relationship files', async () => {

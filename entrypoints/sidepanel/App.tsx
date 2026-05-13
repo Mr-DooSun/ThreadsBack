@@ -15,17 +15,22 @@ import {
   type ExportParseResult,
 } from '../../lib/exportParser';
 import {
-  loadRelationshipState,
+  loadRelationshipStates,
   replaceSnapshotAccounts,
   resetRelationshipState,
   saveRelationshipState,
   toggleReviewedUsername,
 } from '../../lib/storage';
-import type { Account, StoredRelationshipState } from '../../lib/types';
+import type {
+  Account,
+  RelationshipPlatform,
+  StoredRelationshipState,
+  StoredRelationshipStates,
+} from '../../lib/types';
 import { I18nProvider, useI18n, type Locale } from './i18n';
 
 type ImportStatus = 'idle' | 'parsing' | 'ready' | 'error';
-type Platform = 'threads' | 'instagram';
+type Platform = RelationshipPlatform;
 type ProfileOpenMode = 'currentTab' | 'newTab';
 type ReviewUndoState = {
   username: string;
@@ -128,18 +133,21 @@ export default function App() {
 
 function AppShell() {
   const { t, locale } = useI18n();
-  const [state, setState] = useState<StoredRelationshipState | null>(null);
+  const [states, setStates] = useState<StoredRelationshipStates | null>(null);
   const [importStatus, setImportStatus] = useState<ImportStatus>('idle');
   const [parseResult, setParseResult] = useState<ExportParseResult | null>(null);
+  const [parsePlatform, setParsePlatform] = useState<Platform | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [reviewUndo, setReviewUndo] = useState<ReviewUndoState | null>(null);
   const [showHowTo, setShowHowTo] = useState(false);
   const [reuploadOpen, setReuploadOpen] = useState(false);
-  const [platform, setPlatformState] = useState<Platform>(DEFAULT_PLATFORM);
+  const [platform, setPlatformState] = useState<Platform>(detectInitialPlatform);
   const [profileOpenMode, setProfileOpenModeState] =
-    useState<ProfileOpenMode>(DEFAULT_PROFILE_OPEN_MODE);
+    useState<ProfileOpenMode>(detectInitialProfileOpenMode);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const parseRunRef = useRef(0);
+  const state = states?.[platform] ?? null;
 
   const analysis = useMemo(
     () => (state ? analyzeRelationships(state) : null),
@@ -147,18 +155,13 @@ function AppShell() {
   );
 
   useEffect(() => {
-    setPlatformState(detectInitialPlatform());
-    setProfileOpenModeState(detectInitialProfileOpenMode());
-  }, []);
-
-  useEffect(() => {
     document.title = t.app.name;
     document.documentElement.lang = locale;
   }, [locale, t.app.name]);
 
   useEffect(() => {
-    void loadRelationshipState()
-      .then(setState)
+    void loadRelationshipStates(detectInitialPlatform())
+      .then(setStates)
       .catch((loadError: unknown) => {
         setError(
           loadError instanceof Error ? loadError.message : t.notice.loadError,
@@ -175,6 +178,27 @@ function AppShell() {
     }
   }
 
+  function resetImportDraft() {
+    parseRunRef.current += 1;
+    setParseResult(null);
+    setParsePlatform(null);
+    setImportStatus('idle');
+    setError(null);
+    setNotice(null);
+    setReviewUndo(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }
+
+  function handlePlatformChange(next: Platform) {
+    if (next === platform) return;
+
+    setPlatform(next);
+    resetImportDraft();
+    setReuploadOpen(false);
+  }
+
   function setProfileOpenMode(next: ProfileOpenMode) {
     setProfileOpenModeState(next);
     try {
@@ -184,33 +208,55 @@ function AppShell() {
     }
   }
 
+  function updateRelationshipState(
+    targetPlatform: Platform,
+    nextState: StoredRelationshipState,
+  ) {
+    setStates((currentStates) =>
+      currentStates
+        ? {
+            ...currentStates,
+            [targetPlatform]: nextState,
+          }
+        : currentStates,
+    );
+  }
+
   async function handleFileChange(files: FileList | null) {
     const selectedFiles = files ? [...files] : [];
-    setNotice(null);
-    setReviewUndo(null);
-    setError(null);
-    setParseResult(null);
+    resetImportDraft();
 
     if (selectedFiles.length === 0) {
-      setImportStatus('idle');
       return;
     }
 
+    const parseRun = parseRunRef.current + 1;
+    parseRunRef.current = parseRun;
     setImportStatus('parsing');
 
     try {
-      const result = await parseExportFiles(selectedFiles);
-      setParseResult(result);
-      setImportStatus('ready');
+      const selectedPlatform = platform;
+      const result = await parseExportFiles(selectedFiles, {
+        preferredPlatform: selectedPlatform,
+      });
+      if (parseRun !== parseRunRef.current) return;
 
       const detected = detectPlatformFromParseResult(result);
+      const targetPlatform = detected ?? selectedPlatform;
+      setParseResult(result);
+      setParsePlatform(targetPlatform);
+      setImportStatus('ready');
+
       if (detected) {
         setPlatform(detected);
       }
 
       setNotice(t.notice.filesParsed);
     } catch (parseError) {
+      if (parseRun !== parseRunRef.current) return;
+
       setImportStatus('error');
+      setParsePlatform(null);
       setError(
         parseError instanceof ExportParseError || parseError instanceof Error
           ? parseError.message
@@ -224,41 +270,36 @@ function AppShell() {
   }
 
   async function applyParseResult() {
-    if (!state || !parseResult) return;
+    if (!states || !parseResult) return;
 
-    const nextState = replaceSnapshotAccounts(state, {
+    const targetPlatform = parsePlatform ?? platform;
+    const nextState = replaceSnapshotAccounts(states[targetPlatform], {
       following:
         parseResult.following.length > 0 ? parseResult.following : undefined,
       followers:
         parseResult.followers.length > 0 ? parseResult.followers : undefined,
     });
 
-    await saveRelationshipState(nextState);
-    setState(nextState);
-    setParseResult(null);
-    setImportStatus('idle');
+    await saveRelationshipState(targetPlatform, nextState);
+    updateRelationshipState(targetPlatform, nextState);
+    if (targetPlatform !== platform) {
+      setPlatform(targetPlatform);
+    }
+    resetImportDraft();
     setReuploadOpen(false);
-    setReviewUndo(null);
     setNotice(t.notice.applied);
   }
 
   function clearParseResult() {
-    setParseResult(null);
-    setImportStatus('idle');
-    setError(null);
-    setNotice(null);
-    setReviewUndo(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    resetImportDraft();
   }
 
   async function markReviewed(account: Account) {
     if (!state) return;
 
     const nextState = toggleReviewedUsername(state, account.username);
-    await saveRelationshipState(nextState);
-    setState(nextState);
+    await saveRelationshipState(platform, nextState);
+    updateRelationshipState(platform, nextState);
     setNotice(null);
     setReviewUndo({
       username: account.username,
@@ -270,25 +311,22 @@ function AppShell() {
     if (!state) return;
 
     const nextState = toggleReviewedUsername(state, username);
-    await saveRelationshipState(nextState);
-    setState(nextState);
+    await saveRelationshipState(platform, nextState);
+    updateRelationshipState(platform, nextState);
     setReviewUndo(null);
   }
 
   async function resetAll() {
     if (!window.confirm(t.header.resetConfirm)) return;
 
-    const nextState = await resetRelationshipState();
-    setState(nextState);
-    setParseResult(null);
-    setImportStatus('idle');
+    const nextState = await resetRelationshipState(platform);
+    updateRelationshipState(platform, nextState);
+    resetImportDraft();
     setReuploadOpen(false);
-    setError(null);
-    setReviewUndo(null);
     setNotice(t.notice.reset);
   }
 
-  if (!state || !analysis) {
+  if (!states || !state || !analysis) {
     return (
       <main
         data-theme={platform}
@@ -310,12 +348,12 @@ function AppShell() {
       {hasData ? (
         <ReviewControlBar
           platform={platform}
-          onPlatformChange={setPlatform}
+          onPlatformChange={handlePlatformChange}
           profileOpenMode={profileOpenMode}
           onProfileOpenModeChange={setProfileOpenMode}
         />
       ) : (
-        <PlatformTabs platform={platform} onChange={setPlatform} />
+        <PlatformTabs platform={platform} onChange={handlePlatformChange} />
       )}
 
       {(error || notice) && (
@@ -1214,6 +1252,30 @@ function HowToModal({
             </div>
           </div>
 
+          <div className="guide-cta shrink-0 rounded-xl border p-3">
+            <div className="flex items-start gap-3">
+              <div className="brand-tile flex h-8 w-8 shrink-0 items-center justify-center rounded-xl">
+                <ExternalLinkIcon className="h-4 w-4 text-current" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-strong">
+                  Meta Accounts Center
+                </p>
+                <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
+                  {t.upload.accountsCenterExportHint}
+                </p>
+              </div>
+            </div>
+            <LinkButton
+              url={HELP_LINKS.accountsCenter}
+              primary
+              centered
+              className="mt-3 w-full rounded-xl py-2.5 text-sm font-semibold"
+            >
+              {t.upload.accountsCenterExport}
+            </LinkButton>
+          </div>
+
           <div className="shrink-0 flex items-center justify-between gap-3">
             <button
               type="button"
@@ -1304,13 +1366,6 @@ function GuideStep({
             activeIndex={step.previewActiveIndex}
             kind={step.previewKind}
           />
-          {(index === 0 || index === totalSteps - 1) && (
-            <div className="flex justify-center">
-              <LinkButton url={HELP_LINKS.accountsCenter} primary centered>
-                {t.upload.accountsCenterExport}
-              </LinkButton>
-            </div>
-          )}
         </div>
       </div>
     </article>
@@ -2014,11 +2069,13 @@ function LinkButton({
   url,
   primary = false,
   centered = false,
+  className = '',
   children,
 }: {
   url: string;
   primary?: boolean;
   centered?: boolean;
+  className?: string;
   children: ReactNode;
 }) {
   return (
@@ -2030,7 +2087,8 @@ function LinkButton({
         (centered ? 'justify-center ' : 'justify-between ') +
         (primary
           ? 'btn-primary border-transparent shadow-sm hover:shadow-md'
-          : 'themed-card surface-hover text-default')
+          : 'themed-card surface-hover text-default') +
+        (className ? ` ${className}` : '')
       }
     >
       <span>{children}</span>

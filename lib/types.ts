@@ -1,4 +1,5 @@
 export type SnapshotKind = 'following' | 'followers';
+export type RelationshipPlatform = 'threads' | 'instagram';
 
 export interface Account {
   username: string;
@@ -31,3 +32,8 @@ export interface StoredRelationshipState {
   hiddenUsernames: string[];
   updatedAt?: number;
 }
+
+export type StoredRelationshipStates = Record<
+  RelationshipPlatform,
+  StoredRelationshipState
+>;

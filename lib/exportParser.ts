@@ -22,6 +22,10 @@ export interface ExportParseResult {
   platformHints: ExportPlatformHint[];
 }
 
+export interface ExportParseOptions {
+  preferredPlatform?: ExportPlatformHint;
+}
+
 export class ExportParseError extends Error {
   constructor(message: string) {
     super(message);
@@ -34,7 +38,10 @@ const ZIP_EXTENSION = /\.zip$/i;
 const HTML_EXTENSION = /\.html?$/i;
 const JSON_FILE_SIZE_LIMIT_BYTES = 100 * 1024 * 1024;
 
-export async function parseExportFiles(files: File[]): Promise<ExportParseResult> {
+export async function parseExportFiles(
+  files: File[],
+  options: ExportParseOptions = {},
+): Promise<ExportParseResult> {
   if (files.length === 0) {
     throw new ExportParseError('분석할 ZIP 또는 JSON 파일을 선택해 주세요.');
   }
@@ -81,22 +88,25 @@ export async function parseExportFiles(files: File[]): Promise<ExportParseResult
     });
   }
 
-  return parseExportEntries(entries, skippedFiles);
+  return parseExportEntries(entries, skippedFiles, options);
 }
 
 export function parseExportEntries(
   entries: ExportParseEntry[],
   initialSkippedFiles: ExportSkippedFile[] = [],
+  options: ExportParseOptions = {},
 ): ExportParseResult {
   if (entries.length === 0 && initialSkippedFiles.length > 0) {
     throw new ExportParseError(initialSkippedFiles[0].reason);
   }
 
-  const following: Account[] = [];
-  const followers: Account[] = [];
-  const recognizedFiles = new Set<string>();
   const skippedFiles = [...initialSkippedFiles];
-  const platformHints = new Set<ExportPlatformHint>();
+  const recognizedEntries: Array<{
+    accounts: Account[];
+    kind: SnapshotKind;
+    name: string;
+    platformHint: ExportPlatformHint | null;
+  }> = [];
 
   for (const entry of entries) {
     if (HTML_EXTENSION.test(entry.name)) {
@@ -141,14 +151,12 @@ export function parseExportEntries(
       if (accounts.length === 0) continue;
 
       recognizedAny = true;
-      recognizedFiles.add(entry.name);
-      if (platformHint) platformHints.add(platformHint);
-
-      if (kind === 'following') {
-        following.push(...accounts);
-      } else {
-        followers.push(...accounts);
-      }
+      recognizedEntries.push({
+        accounts,
+        kind,
+        name: entry.name,
+        platformHint,
+      });
     }
 
     if (!recognizedAny) {
@@ -156,6 +164,35 @@ export function parseExportEntries(
         name: entry.name,
         reason: '계정 목록을 찾지 못했습니다.',
       });
+    }
+  }
+
+  const availablePlatformHints = new Set(
+    recognizedEntries
+      .map((entry) => entry.platformHint)
+      .filter((hint): hint is ExportPlatformHint => Boolean(hint)),
+  );
+  const shouldFilterByPreferredPlatform =
+    Boolean(options.preferredPlatform) && availablePlatformHints.size > 1;
+  const selectedEntries = shouldFilterByPreferredPlatform
+    ? recognizedEntries.filter(
+        (entry) => entry.platformHint === options.preferredPlatform,
+      )
+    : recognizedEntries;
+
+  const following: Account[] = [];
+  const followers: Account[] = [];
+  const recognizedFiles = new Set<string>();
+  const platformHints = new Set<ExportPlatformHint>();
+
+  for (const entry of selectedEntries) {
+    recognizedFiles.add(entry.name);
+    if (entry.platformHint) platformHints.add(entry.platformHint);
+
+    if (entry.kind === 'following') {
+      following.push(...entry.accounts);
+    } else {
+      followers.push(...entry.accounts);
     }
   }
 

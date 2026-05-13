@@ -1,30 +1,75 @@
 import { browser } from 'wxt/browser';
 import { mergeAccounts, normalizeUsername, uniqueAccounts } from './diff';
-import type { Account, SnapshotKind, StoredRelationshipState } from './types';
+import type {
+  Account,
+  RelationshipPlatform,
+  SnapshotKind,
+  StoredRelationshipState,
+  StoredRelationshipStates,
+} from './types';
 
-const STORAGE_KEY = 'followmirror.relationshipState.v1';
-
-export const EMPTY_STATE: StoredRelationshipState = {
-  version: 1,
-  following: [],
-  followers: [],
-  hiddenUsernames: [],
+const LEGACY_STORAGE_KEY = 'followmirror.relationshipState.v1';
+const STORAGE_KEYS: Record<RelationshipPlatform, string> = {
+  threads: 'followmirror.relationshipState.v1.threads',
+  instagram: 'followmirror.relationshipState.v1.instagram',
 };
 
-export async function loadRelationshipState(): Promise<StoredRelationshipState> {
-  const result = (await browser.storage.local.get(STORAGE_KEY)) as Record<
-    string,
-    unknown
-  >;
+export const EMPTY_STATE: StoredRelationshipState = createEmptyRelationshipState();
 
-  return parseStoredState(result[STORAGE_KEY]);
+export function createEmptyRelationshipState(): StoredRelationshipState {
+  return {
+    version: 1,
+    following: [],
+    followers: [],
+    hiddenUsernames: [],
+  };
+}
+
+export function createEmptyRelationshipStates(): StoredRelationshipStates {
+  return {
+    threads: createEmptyRelationshipState(),
+    instagram: createEmptyRelationshipState(),
+  };
+}
+
+export async function loadRelationshipStates(
+  legacyPlatform: RelationshipPlatform = 'threads',
+): Promise<StoredRelationshipStates> {
+  const result = (await browser.storage.local.get([
+    STORAGE_KEYS.threads,
+    STORAGE_KEYS.instagram,
+    LEGACY_STORAGE_KEY,
+  ])) as Record<string, unknown>;
+
+  const states = createEmptyRelationshipStates();
+  const storedThreads = result[STORAGE_KEYS.threads];
+  const storedInstagram = result[STORAGE_KEYS.instagram];
+  const storedLegacy = result[LEGACY_STORAGE_KEY];
+
+  if (isStoredStateRecord(storedThreads)) {
+    states.threads = parseStoredState(storedThreads);
+  }
+
+  if (isStoredStateRecord(storedInstagram)) {
+    states.instagram = parseStoredState(storedInstagram);
+  }
+
+  const hasPlatformState =
+    isStoredStateRecord(storedThreads) || isStoredStateRecord(storedInstagram);
+  if (!hasPlatformState && isStoredStateRecord(storedLegacy)) {
+    const legacyState = parseStoredState(storedLegacy);
+    states[detectStatePlatform(legacyState) ?? legacyPlatform] = legacyState;
+  }
+
+  return states;
 }
 
 export async function saveRelationshipState(
+  platform: RelationshipPlatform,
   state: StoredRelationshipState,
 ): Promise<void> {
   await browser.storage.local.set({
-    [STORAGE_KEY]: {
+    [STORAGE_KEYS[platform]]: {
       ...state,
       following: uniqueAccounts(state.following),
       followers: uniqueAccounts(state.followers),
@@ -32,11 +77,14 @@ export async function saveRelationshipState(
       updatedAt: Date.now(),
     },
   });
+  await browser.storage.local.remove(LEGACY_STORAGE_KEY);
 }
 
-export async function resetRelationshipState(): Promise<StoredRelationshipState> {
-  await browser.storage.local.remove(STORAGE_KEY);
-  return { ...EMPTY_STATE };
+export async function resetRelationshipState(
+  platform: RelationshipPlatform,
+): Promise<StoredRelationshipState> {
+  await browser.storage.local.remove([STORAGE_KEYS[platform], LEGACY_STORAGE_KEY]);
+  return createEmptyRelationshipState();
 }
 
 export function mergeSnapshotAccounts(
@@ -100,7 +148,7 @@ export function toggleReviewedUsername(
 
 function parseStoredState(value: unknown): StoredRelationshipState {
   if (!isRecord(value) || value.version !== 1) {
-    return { ...EMPTY_STATE };
+    return createEmptyRelationshipState();
   }
 
   return {
@@ -142,6 +190,26 @@ function parseStrings(value: unknown): string[] {
 
 function uniqueStrings(values: string[]): string[] {
   return [...new Set(values.map(normalizeUsername).filter(Boolean))].sort();
+}
+
+function detectStatePlatform(
+  state: StoredRelationshipState,
+): RelationshipPlatform | null {
+  const urls = [...state.following, ...state.followers].map((account) =>
+    account.profileUrl.toLowerCase(),
+  );
+  const threadsCount = urls.filter((url) => url.includes('threads.net/')).length;
+  const instagramCount = urls.filter((url) =>
+    url.includes('instagram.com/'),
+  ).length;
+
+  if (threadsCount > instagramCount) return 'threads';
+  if (instagramCount > threadsCount) return 'instagram';
+  return null;
+}
+
+function isStoredStateRecord(value: unknown): value is Record<string, unknown> {
+  return isRecord(value) && value.version === 1;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
