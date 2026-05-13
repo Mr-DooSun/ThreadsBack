@@ -1141,11 +1141,23 @@ function GuidePreview({
     | 'ready';
 }) {
   if (kind === 'exportHome') {
-    return <MetaExportHomePreview title={title} activeIndex={activeIndex} />;
+    return (
+      <MetaExportHomePreview
+        title={title}
+        items={items}
+        activeIndex={activeIndex}
+      />
+    );
   }
 
   if (kind === 'profile') {
-    return <MetaProfilePreview title={title} activeIndex={activeIndex} />;
+    return (
+      <MetaProfilePreview
+        title={title}
+        items={items}
+        activeIndex={activeIndex}
+      />
+    );
   }
 
   if (kind === 'destination') {
@@ -1191,7 +1203,13 @@ function GuidePreview({
   }
 
   if (kind === 'ready') {
-    return <MetaReadyPreview title={title} activeIndex={activeIndex} />;
+    return (
+      <MetaReadyPreview
+        title={title}
+        items={items}
+        activeIndex={activeIndex}
+      />
+    );
   }
 
   return (
@@ -1245,18 +1263,25 @@ function MetaShell({
 
 function MetaExportHomePreview({
   title,
+  items,
   activeIndex,
 }: {
   title: string;
+  items: readonly string[];
   activeIndex: number;
 }) {
+  const copy = getMetaPreviewCopy(title, items);
+  const createLabel = items[0] ?? copy.createExport;
+  const currentLabel = items[1] ?? copy.currentActivity;
+  const pastLabel = items[2] ?? copy.pastActivity;
+
   return (
     <MetaShell>
       <div className="space-y-4">
         <div>
           <p className="text-base font-bold leading-tight">{title}</p>
           <p className="mt-1 text-[10px] leading-relaxed text-[#111318]">
-            You can export a copy of your information to your device.
+            {copy.exportHomeDescription}
           </p>
         </div>
         <div
@@ -1265,14 +1290,14 @@ function MetaExportHomePreview({
             (activeIndex === 0 ? 'bg-[#0866e5] ring-2 ring-[#8bb9ff]' : 'bg-[#0866e5]')
           }
         >
-          Create export
+          {createLabel}
         </div>
         <div className="grid grid-cols-2 text-center text-[10px] font-semibold">
           <div className="border-b-2 border-black pb-1 text-[#111318]">
-            Current activity
+            {currentLabel}
           </div>
           <div className="border-b border-[#d9dde3] pb-1 text-[#616771]">
-            Past activity
+            {pastLabel}
           </div>
         </div>
       </div>
@@ -1282,18 +1307,22 @@ function MetaExportHomePreview({
 
 function MetaProfilePreview({
   title,
+  items,
   activeIndex,
 }: {
   title: string;
+  items: readonly string[];
   activeIndex: number;
 }) {
+  const copy = getMetaPreviewCopy(title, items);
+
   return (
     <MetaShell showBack>
       <div className="space-y-3">
         <div>
           <p className="text-base font-bold leading-tight">{title}</p>
           <p className="mt-1 text-[10px] leading-relaxed text-[#616771]">
-            Select the account connected to your Threads profile.
+            {copy.profileDescription}
           </p>
         </div>
         <div
@@ -1304,7 +1333,9 @@ function MetaProfilePreview({
         >
           <div className="h-9 w-9 shrink-0 rounded-full bg-[#d8d1c4]" />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[11px] font-bold">your Instagram</p>
+            <p className="truncate text-[11px] font-bold">
+              {items[0] ?? copy.profileLabel}
+            </p>
             <p className="text-[10px] text-[#616771]">Instagram</p>
           </div>
           <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#0866e5] text-[12px] font-bold text-white">
@@ -1312,7 +1343,7 @@ function MetaProfilePreview({
           </span>
         </div>
         <div className="rounded-full bg-[#0866e5] px-3 py-2 text-center text-[11px] font-semibold text-white">
-          Next
+          {copy.next}
         </div>
       </div>
     </MetaShell>
@@ -1328,16 +1359,18 @@ function MetaDestinationPreview({
   items: readonly string[];
   activeIndex: number;
 }) {
+  const copy = getMetaPreviewCopy(title, items);
+
   return (
     <MetaShell showBack>
       <div className="space-y-3">
         <div>
           <p className="text-[10px] font-semibold text-[#111318]">
-            your account · Instagram
+            {copy.accountLabel} · Instagram
           </p>
           <p className="mt-1 text-base font-bold leading-tight">{title}</p>
           <p className="mt-1 text-[10px] leading-relaxed text-[#111318]">
-            You can export info to your device or to an external service.
+            {copy.destinationDescription}
           </p>
         </div>
         <div className="overflow-hidden rounded-xl border border-[#d9dde3]">
@@ -1363,6 +1396,7 @@ function MetaConfirmPreview({
   items: readonly string[];
   activeIndex: number;
 }) {
+  const copy = getMetaPreviewCopy(title, items);
   const hasFinalSettings = items.some((item) => item.includes(':'));
   const rows = hasFinalSettings
     ? items.map((item) => {
@@ -1370,10 +1404,13 @@ function MetaConfirmPreview({
         return { label, value };
       })
     : [
-        { label: items[0] ?? 'Customize information', value: 'All available information' },
-        { label: items[1] ?? 'Date range', value: 'Last year' },
-        { label: items[2] ?? 'Format', value: 'HTML' },
-        { label: items[3] ?? 'Media quality', value: 'Medium quality' },
+        {
+          label: items[0] ?? copy.customizeInformation,
+          value: copy.allAvailableInformation,
+        },
+        { label: items[1] ?? copy.dateRange, value: copy.lastYear },
+        { label: items[2] ?? copy.format, value: 'HTML' },
+        { label: items[3] ?? copy.mediaQuality, value: copy.mediumQuality },
       ];
 
   return (
@@ -1382,16 +1419,18 @@ function MetaConfirmPreview({
         <div>
           <p className="text-base font-bold leading-tight">{title}</p>
           <p className="mt-1 text-[10px] leading-relaxed text-[#616771]">
-            We will send a notification when your export is ready.
+            {copy.confirmDescription}
           </p>
         </div>
 
         <div className="flex items-center gap-2 rounded-xl border border-[#d9dde3] p-2">
           <div className="h-8 w-8 shrink-0 rounded-full bg-[#d8d1c4]" />
           <div className="min-w-0">
-            <p className="truncate text-[11px] font-bold">your account</p>
+            <p className="truncate text-[11px] font-bold">{copy.accountLabel}</p>
             <p className="text-[10px] text-[#616771]">Instagram</p>
-            <p className="text-[10px] text-[#616771]">Export to Device · Once</p>
+            <p className="text-[10px] text-[#616771]">
+              {copy.exportToDeviceOnce}
+            </p>
           </div>
         </div>
 
@@ -1407,7 +1446,7 @@ function MetaConfirmPreview({
         </div>
 
         <div className="rounded-full bg-[#0866e5] px-3 py-2 text-center text-[11px] font-semibold text-white">
-          Start export
+          {copy.startExport}
         </div>
       </div>
     </MetaShell>
@@ -1425,22 +1464,23 @@ function MetaCustomizePreview({
   activeIndex: number;
   variant: 'threads' | 'instagram';
 }) {
-  const clearLabel = items[0] ?? 'Clear all';
+  const copy = getMetaPreviewCopy(title, items);
+  const clearLabel = items[0] ?? copy.clearAll;
   const sectionTitle =
     variant === 'threads'
-      ? items[1] ?? 'Your Instagram activity'
-      : 'Connections';
+      ? items[1] ?? copy.instagramActivity
+      : items[1] ?? copy.connections;
   const sectionDescription =
     variant === 'threads'
-      ? 'Your Threads profile and activity'
-      : 'Who and how you have connected with people';
+      ? copy.threadsActivityDescription
+      : copy.connectionsDescription;
   const rows =
     variant === 'threads'
       ? [{ label: parsePreviewLabel(items[2] ?? 'Threads: on'), checked: true }]
       : [
-          { label: parsePreviewLabel(items[1] ?? 'Contacts: off'), checked: false },
+          { label: parsePreviewLabel(items[2] ?? copy.contactsOff), checked: false },
           {
-            label: parsePreviewLabel(items[2] ?? 'Followers and following: on'),
+            label: parsePreviewLabel(items[3] ?? copy.followersFollowingOn),
             checked: true,
           },
         ];
@@ -1451,7 +1491,7 @@ function MetaCustomizePreview({
         <div>
           <p className="text-base font-bold leading-tight">{title}</p>
           <p className="mt-1 text-[10px] leading-relaxed text-[#616771]">
-            Select only the information this analysis needs.
+            {copy.customizeDescription}
           </p>
         </div>
 
@@ -1473,7 +1513,7 @@ function MetaCustomizePreview({
               key={row.label}
               className={
                 'flex items-center justify-between border-b border-[#d9dde3] px-3 py-2 last:border-b-0 ' +
-                (index + (variant === 'threads' ? 2 : 1) === activeIndex
+                (index + 2 === activeIndex
                   ? 'bg-[#eaf2ff]'
                   : 'bg-white')
               }
@@ -1494,7 +1534,7 @@ function MetaCustomizePreview({
         </div>
 
         <div className="rounded-full bg-[#0866e5] px-3 py-2 text-center text-[11px] font-semibold text-white">
-          Save
+          {copy.save}
         </div>
       </div>
     </MetaShell>
@@ -1505,30 +1545,42 @@ function parsePreviewLabel(value: string): string {
   return value.split(':')[0]?.trim() || value;
 }
 
-function MetaReadyPreview({ title }: { title: string; activeIndex: number }) {
+function MetaReadyPreview({
+  title,
+  items,
+}: {
+  title: string;
+  items: readonly string[];
+  activeIndex: number;
+}) {
+  const copy = getMetaPreviewCopy(title, items);
+  const requestedLabel = items[0] ?? copy.requested;
+  const downloadLabel = items[1] ?? copy.download;
+  const cancelLabel = items[2] ?? copy.cancel;
+
   return (
     <MetaShell>
       <div className="space-y-3">
         <div>
           <p className="text-base font-bold leading-tight">{title}</p>
           <p className="mt-1 text-[10px] leading-relaxed text-[#616771]">
-            Check Current activity after the email arrives.
+            {copy.readyDescription}
           </p>
         </div>
 
         <div className="grid grid-cols-2 text-center text-[10px] font-semibold">
           <div className="border-b-2 border-black pb-1 text-[#111318]">
-            Current activity
+            {copy.currentActivity}
           </div>
           <div className="border-b border-[#d9dde3] pb-1 text-[#616771]">
-            Past activity
+            {copy.pastActivity}
           </div>
         </div>
 
         <div>
-          <p className="text-sm font-bold">Requested</p>
+          <p className="text-sm font-bold">{requestedLabel}</p>
           <p className="mt-0.5 text-[10px] text-[#616771]">
-            Your information is being prepared for export.
+            {copy.preparingDescription}
           </p>
         </div>
 
@@ -1537,24 +1589,110 @@ function MetaReadyPreview({ title }: { title: string; activeIndex: number }) {
             <div className="h-9 w-9 shrink-0 rounded-full bg-[#d8d1c4]" />
             <div className="min-w-0">
               <p className="truncate text-[11px] font-bold">
-                specific information download
+                {copy.specificInformationDownload}
               </p>
-              <p className="text-[10px] text-[#616771]">your account</p>
+              <p className="text-[10px] text-[#616771]">{copy.accountLabel}</p>
               <p className="text-[10px] text-[#616771]">Instagram</p>
             </div>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <div className="rounded-full bg-[#0866e5] px-3 py-2 text-center text-[11px] font-semibold text-white ring-2 ring-[#8bb9ff]">
-              Download
+              {downloadLabel}
             </div>
             <div className="rounded-full bg-[#f0f2f5] px-3 py-2 text-center text-[11px] font-semibold text-[#111318]">
-              Cancel
+              {cancelLabel}
             </div>
           </div>
         </div>
       </div>
     </MetaShell>
   );
+}
+
+function getMetaPreviewCopy(title: string, items: readonly string[]) {
+  const isKorean = /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test([title, ...items].join(' '));
+
+  if (isKorean) {
+    return {
+      accountLabel: '내 계정',
+      allAvailableInformation: '사용 가능한 모든 정보',
+      cancel: '취소',
+      clearAll: '모두 지우기',
+      confirmDescription:
+        '내보내기가 준비되면 알림을 보내드립니다. 보안을 위해 4일 동안만 파일을 다운로드할 수 있습니다.',
+      connections: '연결 활동',
+      connectionsDescription: '회원님이 소통한 사람과 소통 방식',
+      contactsOff: '연락처: 끔',
+      createExport: '내보내기 만들기',
+      currentActivity: '현재 활동',
+      customizeDescription: '이 분석에 필요한 정보만 선택하세요.',
+      customizeInformation: '정보 맞춤 설정',
+      dateRange: '기간',
+      destinationDescription:
+        '정보를 기기나 외부 서비스로 내보낼 수 있습니다.',
+      download: '다운로드',
+      exportHomeDescription:
+        '회원님 정보의 사본을 외부 서비스에 내보내거나 회원님의 기기에 내보낼 수 있습니다.',
+      exportToDeviceOnce: '기기로 내보내기 · 1회',
+      followersFollowingOn: '팔로워 및 팔로잉: 켬',
+      format: '형식',
+      instagramActivity: '내 Instagram 활동',
+      lastYear: '작년',
+      mediaQuality: '미디어 품질',
+      mediumQuality: '보통 화질',
+      next: '다음',
+      pastActivity: '지난 활동',
+      preparingDescription: '회원님 정보가 내보내기를 위해 준비 중입니다.',
+      profileDescription: '분석하려는 Instagram 프로필을 선택합니다.',
+      profileLabel: 'Instagram 프로필',
+      readyDescription: '준비 완료 메일이 오면 현재 활동에서 확인하세요.',
+      requested: '요청됨',
+      save: '저장',
+      specificInformationDownload: '특정 정보 다운로드',
+      startExport: '내보내기 시작',
+      threadsActivityDescription:
+        '회원님의 Threads 프로필 및 활동에 관한 정보',
+    };
+  }
+
+  return {
+    accountLabel: 'your account',
+    allAvailableInformation: 'All available information',
+    cancel: 'Cancel',
+    clearAll: 'Clear all',
+    confirmDescription: 'We will send a notification when your export is ready.',
+    connections: 'Connections',
+    connectionsDescription: 'Who and how you have connected with people',
+    contactsOff: 'Contacts: off',
+    createExport: 'Create export',
+    currentActivity: 'Current activity',
+    customizeDescription: 'Select only the information this analysis needs.',
+    customizeInformation: 'Customize information',
+    dateRange: 'Date range',
+    destinationDescription:
+      'You can export info to your device or to an external service.',
+    download: 'Download',
+    exportHomeDescription:
+      'You can export a copy of your information to your device.',
+    exportToDeviceOnce: 'Export to Device · Once',
+    followersFollowingOn: 'Followers and following: on',
+    format: 'Format',
+    instagramActivity: 'Your Instagram activity',
+    lastYear: 'Last year',
+    mediaQuality: 'Media quality',
+    mediumQuality: 'Medium quality',
+    next: 'Next',
+    pastActivity: 'Past activity',
+    preparingDescription: 'Your information is being prepared for export.',
+    profileDescription: 'Select the account connected to your Threads profile.',
+    profileLabel: 'Instagram profile',
+    readyDescription: 'Check Current activity after the email arrives.',
+    requested: 'Requested',
+    save: 'Save',
+    specificInformationDownload: 'specific information download',
+    startExport: 'Start export',
+    threadsActivityDescription: 'Your Threads profile and activity',
+  };
 }
 
 function MetaPreviewRow({
