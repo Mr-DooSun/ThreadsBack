@@ -506,6 +506,9 @@ function LanguageToggle({
       <LangButton active={locale === 'en'} onClick={() => onChange('en')}>
         EN
       </LangButton>
+      <LangButton active={locale === 'ja'} onClick={() => onChange('ja')}>
+        日
+      </LangButton>
     </div>
   );
 }
@@ -1782,7 +1785,9 @@ function MetaReadyPreview({
 }
 
 function getMetaPreviewCopy(title: string, items: readonly string[]) {
-  const isKorean = /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test([title, ...items].join(' '));
+  const previewText = [title, ...items].join(' ');
+  const isKorean = /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(previewText);
+  const isJapanese = /[\u3040-\u30ff\u3400-\u9fff]/.test(previewText);
 
   if (isKorean) {
     return {
@@ -1824,6 +1829,48 @@ function getMetaPreviewCopy(title: string, items: readonly string[]) {
       startExport: '내보내기 시작',
       threadsActivityDescription:
         '회원님의 Threads 프로필 및 활동에 관한 정보',
+    };
+  }
+
+  if (isJapanese) {
+    return {
+      accountLabel: '自分のアカウント',
+      allAvailableInformation: '利用可能なすべての情報',
+      cancel: 'キャンセル',
+      clearAll: 'すべてクリア',
+      confirmDescription:
+        'エクスポートの準備ができたら通知します。セキュリティのため、ファイルは4日間のみダウンロードできます。',
+      connections: 'つながり',
+      connectionsDescription: 'やり取りした相手とその方法',
+      contactsOff: '連絡先: オフ',
+      createExport: 'エクスポートを作成',
+      currentActivity: '現在のアクティビティ',
+      customizeDescription: 'この分析に必要な情報だけを選択してください。',
+      customizeInformation: '情報をカスタマイズ',
+      dateRange: '期間',
+      destinationDescription:
+        '情報をデバイスまたは外部サービスにエクスポートできます。',
+      download: 'ダウンロード',
+      exportHomeDescription:
+        '自分の情報のコピーを外部サービスまたはデバイスにエクスポートできます。',
+      exportToDeviceOnce: 'デバイスにエクスポート · 1回',
+      followersFollowingOn: 'フォロワーとフォロー中: オン',
+      format: '形式',
+      instagramActivity: 'Instagramアクティビティ',
+      lastYear: '昨年',
+      mediaQuality: 'メディア品質',
+      mediumQuality: '標準画質',
+      next: '次へ',
+      pastActivity: '過去のアクティビティ',
+      preparingDescription: '情報をエクスポートする準備をしています。',
+      profileDescription: '分析したいInstagramプロフィールを選択します。',
+      profileLabel: 'Instagramプロフィール',
+      readyDescription: '準備完了メールが届いたら、現在のアクティビティで確認してください。',
+      requested: 'リクエスト済み',
+      save: '保存',
+      specificInformationDownload: '特定の情報をダウンロード',
+      startExport: 'エクスポートを開始',
+      threadsActivityDescription: 'Threadsプロフィールとアクティビティの情報',
     };
   }
 

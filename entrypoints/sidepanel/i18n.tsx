@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react';
 
-export type Locale = 'ko' | 'en';
+export type Locale = 'ko' | 'en' | 'ja';
 type GuidePlatform = 'threads' | 'instagram';
 type GuideStep = {
   title: string;
@@ -535,14 +535,230 @@ const ko: Dict = {
   },
 };
 
-const dictionaries: Record<Locale, Dict> = { en, ko };
+const ja: Dict = {
+  app: {
+    name: '誰がフォローを外した？',
+    tagline: '自分のデータをブラウザ内だけで分析します。',
+  },
+  header: {
+    languageToggle: '言語',
+    resetConfirm: '保存されたデータをすべて削除しますか？',
+  },
+  upload: {
+    heroTitle: 'データファイルをアップロード',
+    heroSubtitle: 'Metaアカウントセンターでエクスポートを作成し、準備できたZIP / JSONファイルを選択してください。',
+    safetyTitle: 'アカウントには触れません',
+    safetyItems: [
+      'ログイン情報、Cookie、トークンを要求したり読み取ったりしません。',
+      'スクレイピング、自動スクロール、内部APIへのアクセスは行いません。',
+      '自動フォロー解除はポリシー違反やアカウント制限のリスクがあるため提供しません。',
+      'プロフィールを自分で確認し、最終判断はユーザーが行います。',
+    ],
+    selectButton: 'ファイルを選択',
+    reuploadButton: '再アップロード',
+    dropHere: 'ZIPまたはJSONファイルをドラッグするかクリック',
+    dropActive: 'ここにファイルをドロップ',
+    privacyNote: 'ファイルはブラウザ内だけで処理されます。',
+    howToTitle: 'データの取得方法',
+    howToOpen: 'ガイドを開く',
+    howToIntro: 'Metaアカウントセンターで以下の手順を進め、ZIPファイルをダウンロードして戻ってきてください。',
+    howToClose: '閉じる',
+    howToPrev: '戻る',
+    howToNext: '次へ',
+    howToDone: '完了',
+    howToStepCount: (current, total) => `${total}ステップ中${current}ステップ`,
+    howToSteps: {
+      threads: [
+        {
+          title: 'エクスポートを作成',
+          body: 'Metaアカウントセンターの「情報をエクスポート」画面を開き、新しいエクスポートを開始します。',
+          previewTitle: '情報をエクスポート',
+          previewItems: ['エクスポートを作成', '現在のアクティビティ', '過去のアクティビティ'],
+          previewActiveIndex: 0,
+          previewKind: 'exportHome',
+        },
+        {
+          title: 'Instagramプロフィールを選択',
+          body: 'ThreadsをInstagramアカウントで作成した場合は、連携しているInstagramプロフィールを選択します。',
+          previewTitle: 'プロフィールを選択',
+          previewItems: ['Instagramプロフィール', '連携されたThreadsデータ'],
+          previewActiveIndex: 0,
+          previewKind: 'profile',
+        },
+        {
+          title: 'デバイスにエクスポート',
+          body: '外部サービスではなく、デバイスへのエクスポートを選択します。',
+          previewTitle: 'エクスポート先を選択',
+          previewItems: ['デバイスにエクスポート', '外部サービスにエクスポート'],
+          previewActiveIndex: 0,
+          previewKind: 'destination',
+        },
+        {
+          title: 'エクスポート設定を確認',
+          body: '「情報をカスタマイズ」を開きます。すべての情報をエクスポートする必要はありません。',
+          previewTitle: 'エクスポートを確認',
+          previewItems: [
+            '情報をカスタマイズ: 利用可能なすべての情報',
+            '期間: 昨年',
+            '形式: HTML',
+            'メディア品質: 標準画質',
+          ],
+          previewActiveIndex: 0,
+          previewKind: 'confirm',
+        },
+        {
+          title: '先にすべてクリア',
+          body: '必ず先に「すべてクリア」を押して全選択を解除してください。必要なThreadsデータだけを取得でき、ZIPが大きくなりすぎません。',
+          importantNote: '重要: 先にすべてクリアを押してから、Threadsだけを選択してください。',
+          previewTitle: 'エクスポートする特定の情報を選択',
+          previewItems: ['すべてクリア', 'Instagramアクティビティ', 'Threads: オン'],
+          previewActiveIndex: 2,
+          previewKind: 'customizeThreads',
+        },
+        {
+          title: 'JSON形式に設定',
+          body: '期間は可能なら全期間、形式はJSONに設定します。メディア品質はこの分析では重要ではありません。',
+          previewTitle: 'エクスポートを確認',
+          previewItems: ['期間: 全期間', '形式: JSON', 'メディア品質: 任意'],
+          previewActiveIndex: -1,
+          previewKind: 'confirm',
+        },
+        {
+          title: '準備できたらダウンロード',
+          body: 'Metaから準備完了メールが届いたら、このアカウントセンター画面に戻ります。キャンセルの横に表示されるダウンロードボタンからZIPファイルを取得します。',
+          previewTitle: '情報をエクスポート',
+          previewItems: ['リクエスト済み', 'ダウンロード', 'キャンセル'],
+          previewActiveIndex: 0,
+          previewKind: 'ready',
+        },
+      ],
+      instagram: [
+        {
+          title: 'エクスポートを作成',
+          body: 'Metaアカウントセンターの「情報をエクスポート」画面を開き、新しいエクスポートを開始します。',
+          previewTitle: '情報をエクスポート',
+          previewItems: ['エクスポートを作成', '現在のアクティビティ', '過去のアクティビティ'],
+          previewActiveIndex: 0,
+          previewKind: 'exportHome',
+        },
+        {
+          title: 'Instagramプロフィールを選択',
+          body: '分析したいInstagramプロフィールを選択します。',
+          previewTitle: 'プロフィールを選択',
+          previewItems: ['Instagramプロフィール'],
+          previewActiveIndex: 0,
+          previewKind: 'profile',
+        },
+        {
+          title: 'デバイスにエクスポート',
+          body: '外部サービスではなく、デバイスへのエクスポートを選択します。',
+          previewTitle: 'エクスポート先を選択',
+          previewItems: ['デバイスにエクスポート', '外部サービスにエクスポート'],
+          previewActiveIndex: 0,
+          previewKind: 'destination',
+        },
+        {
+          title: 'エクスポート設定を確認',
+          body: '「情報をカスタマイズ」を開きます。すべての情報をエクスポートする必要はありません。',
+          previewTitle: 'エクスポートを確認',
+          previewItems: [
+            '情報をカスタマイズ: 利用可能なすべての情報',
+            '期間: 昨年',
+            '形式: HTML',
+            'メディア品質: 標準画質',
+          ],
+          previewActiveIndex: 0,
+          previewKind: 'confirm',
+        },
+        {
+          title: '先にすべてクリア',
+          body: '必ず先に「すべてクリア」を押して全選択を解除してください。フォロワーとフォロー中だけを取得でき、ZIPが大きくなりすぎません。',
+          importantNote: '重要: 先にすべてクリアを押してから、フォロワーとフォロー中だけを選択してください。',
+          previewTitle: 'エクスポートする特定の情報を選択',
+          previewItems: ['すべてクリア', 'つながり', '連絡先: オフ', 'フォロワーとフォロー中: オン'],
+          previewActiveIndex: 3,
+          previewKind: 'customizeInstagram',
+        },
+        {
+          title: 'JSON形式に設定',
+          body: '期間は可能なら全期間、形式はJSONに設定します。メディア品質はこの分析では重要ではありません。',
+          previewTitle: 'エクスポートを確認',
+          previewItems: ['期間: 全期間', '形式: JSON', 'メディア品質: 任意'],
+          previewActiveIndex: -1,
+          previewKind: 'confirm',
+        },
+        {
+          title: '準備できたらダウンロード',
+          body: 'Metaから準備完了メールが届いたら、このアカウントセンター画面に戻ります。キャンセルの横に表示されるダウンロードボタンからZIPファイルを取得します。',
+          previewTitle: '情報をエクスポート',
+          previewItems: ['リクエスト済み', 'ダウンロード', 'キャンセル'],
+          previewActiveIndex: 0,
+          previewKind: 'ready',
+        },
+      ],
+    },
+    howToFooterNote: 'アカウントや言語によって画面は少し異なる場合があります。重要なのはスクリーンショットやリンクではなく、ZIPまたはJSONファイルです。',
+    accountsCenterExport: 'Metaアカウントセンターのエクスポートを開く',
+    statusIdle: '待機中',
+    statusParsing: '読み込み中',
+    statusReady: '読み込み完了',
+    statusError: 'エラー',
+    parsedFollowing: 'フォロー中',
+    parsedFollowers: 'フォロワー',
+    recognized: '認識したファイル',
+    skipped: 'スキップしたファイル',
+    noRecognized: 'まだ認識したファイルはありません。',
+    applyButton: '分析に反映',
+    clearSelection: 'ファイルをクリア',
+    needBoth: '分析にはフォロー中とフォロワーの両方が必要です。',
+    haveFollowing: (n) => `保存済みのフォロー中 ${n.toLocaleString()}件`,
+    haveFollowers: (n) => `保存済みのフォロワー ${n.toLocaleString()}件`,
+  },
+  result: {
+    statLabel: '確認するアカウント',
+    statHint: 'まだ確認済みにしていない片方向フォローのアカウント。',
+    safetyNote: 'ポリシー違反やアカウント制限のリスクを減らすため、この拡張機能は確認を支援するだけです。ThreadsまたはInstagramアカウントのフォロー状態を代わりに変更することはありません。',
+    profile: 'プロフィール',
+    openOn: 'プロフィールを開く',
+    profileOpenModeLabel: 'プロフィールを開く方法',
+    profileOpenCurrentTab: '現在のタブ',
+    profileOpenNewTab: '新しいタブ',
+    hide: '確認済み',
+    hideHint: 'フォロー解除済み、またはこれ以上確認不要',
+    reviewedToast: (label) => `${label}を確認済みにしました。`,
+    reviewUndo: '元に戻す',
+    hiddenSummary: (n) => `確認済みのアカウント ${n.toLocaleString()}件`,
+    zeroTitle: '全員がフォローバック中',
+    zeroBody: 'フォロー中のすべてのアカウントがあなたをフォローしています。',
+    zeroReviewedTitle: '確認完了',
+    zeroReviewedBody: '残りの確認項目はありません。確認済みの記録はこの端末に保存されています。',
+    reupload: '新しいデータをアップロード',
+    resetData: '保存データを初期化',
+  },
+  support: {
+    ctaTitle: '開発をサポート',
+    ctaBody: 'このツールは無料です。役に立った場合は、継続的なメンテナンスを支援できます。',
+    koFiButton: 'Ko-fiでサポート',
+    paypalButton: 'PayPalでサポート',
+    optionalNote: '決済は外部サイトで開きます。この拡張機能は決済情報を処理しません。',
+  },
+  notice: {
+    filesParsed: 'ファイルを読み込みました。反映ボタンを押して分析に適用してください。',
+    applied: '分析に反映しました。',
+    reset: '保存されたローカルデータを削除しました。',
+    loadError: '保存データを読み込めませんでした。',
+    parseError: 'ファイルを読み込めませんでした。',
+  },
+};
+
+const dictionaries: Record<Locale, Dict> = { en, ko, ja };
 
 const STORAGE_KEY = 'wum.locale';
 
 function detectInitialLocale(): Locale {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === 'ko' || stored === 'en') return stored;
+    if (stored === 'ko' || stored === 'en' || stored === 'ja') return stored;
   } catch {
     // ignore — extension storage may be unavailable in some contexts
   }
@@ -550,6 +766,7 @@ function detectInitialLocale(): Locale {
   if (typeof navigator !== 'undefined') {
     const lang = navigator.language?.toLowerCase() ?? '';
     if (lang.startsWith('ko')) return 'ko';
+    if (lang.startsWith('ja')) return 'ja';
   }
   return 'en';
 }
