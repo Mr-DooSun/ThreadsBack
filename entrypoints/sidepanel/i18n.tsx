@@ -81,6 +81,8 @@ interface Dict {
     profileOpenNewTab: string;
     hide: string;
     hideHint: string;
+    reviewedToast: (label: string) => string;
+    reviewUndo: string;
     hiddenSummary: (n: number) => string;
     zeroTitle: string;
     zeroBody: string;
@@ -289,6 +291,8 @@ const en: Dict = {
     profileOpenNewTab: 'New tab',
     hide: 'Reviewed',
     hideHint: 'Mark as handled',
+    reviewedToast: (label) => `${label} marked as reviewed.`,
+    reviewUndo: 'Undo',
     hiddenSummary: (n) => `${n.toLocaleString()} reviewed`,
     zeroTitle: 'All caught up',
     zeroBody: 'Everyone you follow follows you back.',
@@ -502,6 +506,8 @@ const ko: Dict = {
     profileOpenNewTab: '새 탭',
     hide: '검토 완료',
     hideHint: '언팔했거나 더 볼 필요 없음',
+    reviewedToast: (label) => `${label}을(를) 검토 완료로 표시했어요.`,
+    reviewUndo: '되돌리기',
     hiddenSummary: (n) => `검토 완료한 계정 ${n.toLocaleString()}개`,
     zeroTitle: '모두 맞팔로우 중',
     zeroBody: '내가 팔로우하는 모든 계정이 나를 팔로우하고 있어요.',

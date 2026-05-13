@@ -189,14 +189,6 @@ body {
   background: var(--danger-bg);
 }
 
-.row-action-hide {
-  color: var(--danger-text);
-}
-
-.row-action-hide:hover {
-  background: var(--danger-bg);
-}
-
 .avatar-fallback {
   background: var(--avatar-bg);
   color: var(--avatar-text);

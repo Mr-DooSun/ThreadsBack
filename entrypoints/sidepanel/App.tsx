@@ -4,7 +4,6 @@ import {
   useRef,
   useState,
   type DragEvent,
-  type MouseEvent,
   type ReactNode,
   type RefObject,
 } from 'react';
@@ -28,6 +27,10 @@ import { I18nProvider, useI18n, type Locale } from './i18n';
 type ImportStatus = 'idle' | 'parsing' | 'ready' | 'error';
 type Platform = 'threads' | 'instagram';
 type ProfileOpenMode = 'currentTab' | 'newTab';
+type ReviewUndoState = {
+  username: string;
+  label: string;
+};
 
 const HELP_LINKS = {
   accountsCenter:
@@ -101,6 +104,7 @@ function AppShell() {
   const [parseResult, setParseResult] = useState<ExportParseResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [reviewUndo, setReviewUndo] = useState<ReviewUndoState | null>(null);
   const [showHowTo, setShowHowTo] = useState(false);
   const [reuploadOpen, setReuploadOpen] = useState(false);
   const [platform, setPlatformState] = useState<Platform>(DEFAULT_PLATFORM);
@@ -154,6 +158,7 @@ function AppShell() {
   async function handleFileChange(files: FileList | null) {
     const selectedFiles = files ? [...files] : [];
     setNotice(null);
+    setReviewUndo(null);
     setError(null);
     setParseResult(null);
 
@@ -204,15 +209,30 @@ function AppShell() {
     setParseResult(null);
     setImportStatus('idle');
     setReuploadOpen(false);
+    setReviewUndo(null);
     setNotice(t.notice.applied);
   }
 
-  async function toggleReviewed(username: string) {
+  async function markReviewed(account: Account) {
+    if (!state) return;
+
+    const nextState = toggleReviewedUsername(state, account.username);
+    await saveRelationshipState(nextState);
+    setState(nextState);
+    setNotice(null);
+    setReviewUndo({
+      username: account.username,
+      label: account.displayName || `@${account.username}`,
+    });
+  }
+
+  async function undoReviewed(username: string) {
     if (!state) return;
 
     const nextState = toggleReviewedUsername(state, username);
     await saveRelationshipState(nextState);
     setState(nextState);
+    setReviewUndo(null);
   }
 
   async function resetAll() {
@@ -224,6 +244,7 @@ function AppShell() {
     setImportStatus('idle');
     setReuploadOpen(false);
     setError(null);
+    setReviewUndo(null);
     setNotice(t.notice.reset);
   }
 
@@ -264,6 +285,18 @@ function AppShell() {
               {notice}
             </Toast>
           )}
+          {reviewUndo && (
+            <Toast tone="success" onDismiss={() => setReviewUndo(null)}>
+              <span>{t.result.reviewedToast(reviewUndo.label)}</span>
+              <button
+                type="button"
+                onClick={() => void undoReviewed(reviewUndo.username)}
+                className="ml-2 rounded-md px-1.5 py-0.5 font-bold underline-offset-2 hover:underline"
+              >
+                {t.result.reviewUndo}
+              </button>
+            </Toast>
+          )}
           {error && (
             <Toast tone="error" onDismiss={() => setError(null)}>
               {error}
@@ -297,7 +330,7 @@ function AppShell() {
           inputRef={fileInputRef}
           onFilesSelected={(files) => void handleFileChange(files)}
           onApply={() => void applyParseResult()}
-          onToggleReviewed={(username) => void toggleReviewed(username)}
+          onMarkReviewed={(account) => void markReviewed(account)}
           onReset={() => void resetAll()}
           platform={platform}
         />
@@ -663,7 +696,7 @@ function ResultsView({
   inputRef,
   onFilesSelected,
   onApply,
-  onToggleReviewed,
+  onMarkReviewed,
   onReset,
   platform,
 }: {
@@ -677,7 +710,7 @@ function ResultsView({
   inputRef: RefObject<HTMLInputElement | null>;
   onFilesSelected: (files: FileList | null) => void;
   onApply: () => void;
-  onToggleReviewed: (username: string) => void;
+  onMarkReviewed: (account: Account) => void;
   onReset: () => void;
   platform: Platform;
 }) {
@@ -702,7 +735,7 @@ function ResultsView({
               account={account}
               platform={platform}
               profileOpenMode={profileOpenMode}
-              onToggleReviewed={onToggleReviewed}
+              onMarkReviewed={onMarkReviewed}
             />
           ))}
         </ul>
@@ -1980,12 +2013,12 @@ function AccountRow({
   account,
   platform,
   profileOpenMode,
-  onToggleReviewed,
+  onMarkReviewed,
 }: {
   account: Account;
   platform: Platform;
   profileOpenMode: ProfileOpenMode;
-  onToggleReviewed: (username: string) => void;
+  onMarkReviewed: (account: Account) => void;
 }) {
   const { t } = useI18n();
 
@@ -2014,68 +2047,36 @@ function AccountRow({
     }
   }
 
-  function handleAction(
-    event: MouseEvent<HTMLButtonElement>,
-    action: () => void,
-  ) {
-    event.stopPropagation();
-    action();
-  }
-
   return (
     <li className="themed-card group overflow-hidden rounded-xl border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-      <button
-        type="button"
-        onClick={() => void openProfile()}
-        className="flex w-full items-center gap-3 px-3.5 py-3.5 text-left"
-        aria-label={`${t.result.profile} @${account.username}`}
-      >
-        <Avatar account={account} />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-strong">
-            {account.displayName || account.username}
-          </p>
-          <p className="truncate text-[11px] text-muted">
-            @{account.username}
-          </p>
-        </div>
-        <ExternalLinkIcon />
-      </button>
-      <div className="flex border-t themed-border">
-        <RowAction
-          onClick={(event) =>
-            handleAction(event, () => onToggleReviewed(account.username))
-          }
-          label={t.result.hide}
-          description={t.result.hideHint}
-        />
+      <div className="flex items-center gap-2 px-3.5 py-3.5">
+        <button
+          type="button"
+          onClick={() => void openProfile()}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+          aria-label={`${t.result.profile} @${account.username}`}
+        >
+          <Avatar account={account} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-strong">
+              {account.displayName || account.username}
+            </p>
+            <p className="truncate text-[11px] text-muted">
+              @{account.username}
+            </p>
+          </div>
+          <ExternalLinkIcon />
+        </button>
+        <button
+          type="button"
+          onClick={() => onMarkReviewed(account)}
+          title={t.result.hideHint}
+          className="surface-hover shrink-0 rounded-lg border themed-border px-2.5 py-1.5 text-[11px] font-semibold text-muted transition-colors hover:text-strong"
+        >
+          {t.result.hide}
+        </button>
       </div>
     </li>
-  );
-}
-
-function RowAction({
-  onClick,
-  label,
-  description,
-}: {
-  onClick: (event: MouseEvent<HTMLButtonElement>) => void;
-  label: string;
-  description: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="row-action-hide flex-1 px-3 py-3 text-center transition-colors"
-    >
-      <span className="block text-[11px] font-bold leading-tight">
-        {label}
-      </span>
-      <span className="mt-0.5 block text-[10px] font-medium leading-tight opacity-75">
-        {description}
-      </span>
-    </button>
   );
 }
 
