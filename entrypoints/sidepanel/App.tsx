@@ -246,6 +246,7 @@ function AppShell() {
       {!hasData ? (
         <UploadView
           state={state}
+          platform={platform}
           status={importStatus}
           parseResult={parseResult}
           error={error}
@@ -414,6 +415,7 @@ function LangButton({
 
 function UploadView({
   state,
+  platform,
   status,
   parseResult,
   error,
@@ -424,6 +426,7 @@ function UploadView({
   onApply,
 }: {
   state: StoredRelationshipState;
+  platform: Platform;
   status: ImportStatus;
   parseResult: ExportParseResult | null;
   error: string | null;
@@ -479,7 +482,11 @@ function UploadView({
         />
       )}
 
-      <HowToBlock open={showHowTo} onToggle={onToggleHowTo} />
+      <HowToBlock
+        open={showHowTo}
+        platform={platform}
+        onToggle={onToggleHowTo}
+      />
 
       <p className="text-center text-[11px] text-subtle">
         {t.upload.privacyNote}
@@ -907,9 +914,11 @@ function ParseSummary({
 
 function HowToBlock({
   open,
+  platform,
   onToggle,
 }: {
   open: boolean;
+  platform: Platform;
   onToggle: () => void;
 }) {
   const { t } = useI18n();
@@ -930,15 +939,22 @@ function HowToBlock({
         </span>
       </button>
 
-      {open && <HowToModal onClose={onToggle} />}
+      {open && <HowToModal platform={platform} onClose={onToggle} />}
     </>
   );
 }
 
-function HowToModal({ onClose }: { onClose: () => void }) {
+function HowToModal({
+  platform,
+  onClose,
+}: {
+  platform: Platform;
+  onClose: () => void;
+}) {
   const { t } = useI18n();
   const [activeStep, setActiveStep] = useState(0);
-  const totalSteps = t.upload.howToSteps.length;
+  const steps = t.upload.howToSteps[platform];
+  const totalSteps = steps.length;
   const isFirstStep = activeStep === 0;
   const isLastStep = activeStep === totalSteps - 1;
 
@@ -995,9 +1011,9 @@ function HowToModal({ onClose }: { onClose: () => void }) {
               className="flex transition-transform duration-200 ease-out"
               style={{ transform: `translateX(-${activeStep * 100}%)` }}
             >
-              {t.upload.howToSteps.map((step, index) => (
-                <div key={step.title} className="w-full shrink-0">
-                  <GuideStep step={step} index={index} />
+              {steps.map((step, index) => (
+                <div key={`${platform}-${step.title}`} className="w-full shrink-0">
+                  <GuideStep step={step} index={index} totalSteps={totalSteps} />
                 </div>
               ))}
             </div>
@@ -1014,9 +1030,9 @@ function HowToModal({ onClose }: { onClose: () => void }) {
             </button>
 
             <div className="flex items-center gap-1.5">
-              {t.upload.howToSteps.map((step, index) => (
+              {steps.map((step, index) => (
                 <button
-                  key={step.title}
+                  key={`${platform}-${step.title}`}
                   type="button"
                   aria-label={t.upload.howToStepCount(index + 1, totalSteps)}
                   onClick={() => setActiveStep(index)}
@@ -1053,9 +1069,11 @@ function HowToModal({ onClose }: { onClose: () => void }) {
 function GuideStep({
   step,
   index,
+  totalSteps,
 }: {
-  step: ReturnType<typeof useI18n>['t']['upload']['howToSteps'][number];
+  step: ReturnType<typeof useI18n>['t']['upload']['howToSteps'][Platform][number];
   index: number;
+  totalSteps: number;
 }) {
   const { t } = useI18n();
 
@@ -1068,7 +1086,7 @@ function GuideStep({
           </div>
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-subtle">
-              {t.upload.howToStepCount(index + 1, t.upload.howToSteps.length)}
+              {t.upload.howToStepCount(index + 1, totalSteps)}
             </p>
             <h3 className="mt-0.5 text-sm font-semibold text-strong">
               {step.title}
@@ -1076,6 +1094,11 @@ function GuideStep({
             <p className="mt-1 text-[11px] leading-relaxed text-muted">
               {step.body}
             </p>
+            {step.importantNote && (
+              <p className="tone-warning mt-2 rounded-lg border px-2.5 py-2 text-[11px] font-semibold leading-relaxed">
+                {step.importantNote}
+              </p>
+            )}
           </div>
         </div>
 
@@ -1086,7 +1109,7 @@ function GuideStep({
             activeIndex={step.previewActiveIndex}
             kind={step.previewKind}
           />
-          {index === 0 && (
+          {(index === 0 || index === totalSteps - 1) && (
             <div className="flex justify-center">
               <LinkButton url={HELP_LINKS.accountsCenter} primary centered>
                 {t.upload.accountsCenterExport}
@@ -1108,7 +1131,14 @@ function GuidePreview({
   title: string;
   items: readonly string[];
   activeIndex: number;
-  kind: 'exportHome' | 'profile' | 'destination' | 'confirm' | 'customize' | 'ready';
+  kind:
+    | 'exportHome'
+    | 'profile'
+    | 'destination'
+    | 'confirm'
+    | 'customizeInstagram'
+    | 'customizeThreads'
+    | 'ready';
 }) {
   if (kind === 'exportHome') {
     return <MetaExportHomePreview title={title} activeIndex={activeIndex} />;
@@ -1138,12 +1168,24 @@ function GuidePreview({
     );
   }
 
-  if (kind === 'customize') {
+  if (kind === 'customizeInstagram') {
     return (
       <MetaCustomizePreview
         title={title}
         items={items}
         activeIndex={activeIndex}
+        variant="instagram"
+      />
+    );
+  }
+
+  if (kind === 'customizeThreads') {
+    return (
+      <MetaCustomizePreview
+        title={title}
+        items={items}
+        activeIndex={activeIndex}
+        variant="threads"
       />
     );
   }
@@ -1376,17 +1418,32 @@ function MetaCustomizePreview({
   title,
   items,
   activeIndex,
+  variant,
 }: {
   title: string;
   items: readonly string[];
   activeIndex: number;
+  variant: 'threads' | 'instagram';
 }) {
-  const [contactsLabel] = (items[1] ?? 'Contacts').split(':').map((part) => part.trim());
-  const [followersLabel] = (items[2] ?? 'Followers and following').split(':').map((part) => part.trim());
-  const rows = [
-    { label: contactsLabel, checked: false },
-    { label: followersLabel, checked: true },
-  ];
+  const clearLabel = items[0] ?? 'Clear all';
+  const sectionTitle =
+    variant === 'threads'
+      ? items[1] ?? 'Your Instagram activity'
+      : 'Connections';
+  const sectionDescription =
+    variant === 'threads'
+      ? 'Your Threads profile and activity'
+      : 'Who and how you have connected with people';
+  const rows =
+    variant === 'threads'
+      ? [{ label: parsePreviewLabel(items[2] ?? 'Threads: on'), checked: true }]
+      : [
+          { label: parsePreviewLabel(items[1] ?? 'Contacts: off'), checked: false },
+          {
+            label: parsePreviewLabel(items[2] ?? 'Followers and following: on'),
+            checked: true,
+          },
+        ];
 
   return (
     <MetaShell showBack>
@@ -1400,13 +1457,13 @@ function MetaCustomizePreview({
 
         <div className={activeIndex === 0 ? 'rounded-lg ring-2 ring-[#0866e5]' : ''}>
           <div className="flex items-center justify-between">
-            <p className="text-sm font-bold">Connections</p>
+            <p className="text-sm font-bold">{sectionTitle}</p>
             <span className="text-[11px] font-semibold text-[#0866e5]">
-              {items[0] ?? 'Clear all'}
+              {clearLabel}
             </span>
           </div>
           <p className="mt-0.5 text-[10px] leading-relaxed text-[#616771]">
-            Who and how you have connected with people
+            {sectionDescription}
           </p>
         </div>
 
@@ -1416,7 +1473,9 @@ function MetaCustomizePreview({
               key={row.label}
               className={
                 'flex items-center justify-between border-b border-[#d9dde3] px-3 py-2 last:border-b-0 ' +
-                (index + 1 === activeIndex ? 'bg-[#eaf2ff]' : 'bg-white')
+                (index + (variant === 'threads' ? 2 : 1) === activeIndex
+                  ? 'bg-[#eaf2ff]'
+                  : 'bg-white')
               }
             >
               <span className="text-[11px] font-semibold">{row.label}</span>
@@ -1442,32 +1501,55 @@ function MetaCustomizePreview({
   );
 }
 
-function MetaReadyPreview({
-  title,
-  activeIndex,
-}: {
-  title: string;
-  activeIndex: number;
-}) {
+function parsePreviewLabel(value: string): string {
+  return value.split(':')[0]?.trim() || value;
+}
+
+function MetaReadyPreview({ title }: { title: string; activeIndex: number }) {
   return (
     <MetaShell>
       <div className="space-y-3">
         <div>
           <p className="text-base font-bold leading-tight">{title}</p>
           <p className="mt-1 text-[10px] leading-relaxed text-[#616771]">
-            Your export is ready for a limited time.
+            Check Current activity after the email arrives.
           </p>
         </div>
-        <div
-          className={
-            'rounded-xl border border-[#d9dde3] p-3 ' +
-            (activeIndex === 0 ? 'bg-[#eaf2ff]' : 'bg-white')
-          }
-        >
-          <p className="text-[11px] font-bold">Available information download</p>
-          <p className="mt-1 text-[10px] text-[#616771]">ZIP · JSON</p>
-          <div className="mt-3 rounded-full bg-[#0866e5] px-3 py-2 text-center text-[11px] font-semibold text-white">
-            Download
+
+        <div className="grid grid-cols-2 text-center text-[10px] font-semibold">
+          <div className="border-b-2 border-black pb-1 text-[#111318]">
+            Current activity
+          </div>
+          <div className="border-b border-[#d9dde3] pb-1 text-[#616771]">
+            Past activity
+          </div>
+        </div>
+
+        <div>
+          <p className="text-sm font-bold">Requested</p>
+          <p className="mt-0.5 text-[10px] text-[#616771]">
+            Your information is being prepared for export.
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-[#d9dde3] p-3">
+          <div className="flex gap-2">
+            <div className="h-9 w-9 shrink-0 rounded-full bg-[#d8d1c4]" />
+            <div className="min-w-0">
+              <p className="truncate text-[11px] font-bold">
+                specific information download
+              </p>
+              <p className="text-[10px] text-[#616771]">your account</p>
+              <p className="text-[10px] text-[#616771]">Instagram</p>
+            </div>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="rounded-full bg-[#0866e5] px-3 py-2 text-center text-[11px] font-semibold text-white ring-2 ring-[#8bb9ff]">
+              Download
+            </div>
+            <div className="rounded-full bg-[#f0f2f5] px-3 py-2 text-center text-[11px] font-semibold text-[#111318]">
+              Cancel
+            </div>
           </div>
         </div>
       </div>
