@@ -421,28 +421,33 @@
         font-weight: 800;
       }
 
-      html[lang='ko'] h1 {
+      html[lang='ko'] h1,
+      html[lang='ja'] h1 {
         font-size: 54px;
         line-height: 1.12;
         word-break: keep-all;
       }
 
-      html[lang='ko'] .lead {
+      html[lang='ko'] .lead,
+      html[lang='ja'] .lead {
         max-width: 520px;
         font-size: 22px;
         word-break: keep-all;
       }
 
-      html[lang='ko'] .brand {
+      html[lang='ko'] .brand,
+      html[lang='ja'] .brand {
         font-size: 16px;
       }
 
-      html[lang='ko'] .screen-title {
+      html[lang='ko'] .screen-title,
+      html[lang='ja'] .screen-title {
         font-size: 18px;
         word-break: keep-all;
       }
 
-      html[lang='ko'] .screen-sub {
+      html[lang='ko'] .screen-sub,
+      html[lang='ja'] .screen-sub {
         word-break: keep-all;
       }
     </style>
@@ -451,7 +456,10 @@
     <main class="frame" id="frame"></main>
     <script>
       const params = new URLSearchParams(window.location.search);
-      const locale = params.get("locale") === "ko" ? "ko" : "en";
+      const requestedLocale = params.get("locale");
+      const locale = ["en", "ko", "ja"].includes(requestedLocale)
+        ? requestedLocale
+        : "en";
 
       document.documentElement.lang = locale;
 
@@ -524,6 +532,41 @@
             stat: "검토할 계정",
             hint: "아직 검토 완료로 표시하지 않은 계정.",
             hide: "검토 완료",
+          },
+        },
+        ja: {
+          appName: "誰がフォローを外した？",
+          lang: "日",
+          upload: {
+            eyebrow: "ローカルデータ分析",
+            headline: "ファイルを共有せずに<br>フォロー関係を確認。",
+            lead: "自分でダウンロードしたThreadsまたはInstagramの<br>公式エクスポートだけを使います。<br>ファイルはブラウザ内でのみ読み取られます。",
+            pills: ["スクレイピングなし", "ログイン不要", "サーバー送信なし"],
+            title: "データファイルをアップロード",
+            subtitle: "ThreadsまたはInstagramのZIP / JSONファイルを選択してください。",
+            button: "ファイルを選択",
+            drop: "ファイルをドラッグするかクリック",
+            note: "ファイルはブラウザ内だけで処理されます。",
+          },
+          preview: {
+            eyebrow: "反映前の確認",
+            headline: "認識したファイルを<br>反映前に確認。",
+            lead: "保存する前に、フォロー中/フォロワー数と認識されたファイルを確認できます。",
+            pills: ["ZIPとJSON", "認識ファイル", "ローカル保存のみ"],
+            following: "フォロー中",
+            followers: "フォロワー",
+            recognized: "認識したファイル",
+            button: "分析に反映",
+            note: "ファイルはブラウザ内で解析されます。",
+          },
+          results: {
+            eyebrow: "手動確認",
+            headline: "確認が必要な<br>アカウントを一覧表示。",
+            lead: "プロフィールを自分で開いて確認し、終わったアカウントは確認済みにできます。",
+            pills: ["プロフィールを開く", "確認の進捗", "ローカル記録"],
+            stat: "確認するアカウント",
+            hint: "まだ確認済みにしていないアカウント。",
+            hide: "確認済み",
           },
         },
       }[locale];
