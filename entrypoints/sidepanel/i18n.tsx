@@ -26,9 +26,11 @@ interface Dict {
     selectButton: string;
     reuploadButton: string;
     dropHere: string;
+    dropActive: string;
     privacyNote: string;
     howToTitle: string;
     howToSteps: readonly string[];
+    accountsCenterExport: string;
     threadsHelp: string;
     instagramHelp: string;
     statusIdle: string;
@@ -89,7 +91,7 @@ const en: Dict = {
   },
   upload: {
     heroTitle: 'Upload your data file',
-    heroSubtitle: 'Pick the ZIP or JSON from Threads or Instagram.',
+    heroSubtitle: 'Create a Meta Accounts Center export, then upload the ready ZIP or JSON.',
     safetyTitle: 'Safe by design',
     safetyItems: [
       'No login, password, cookies, or access tokens.',
@@ -99,16 +101,20 @@ const en: Dict = {
     ],
     selectButton: 'Select file',
     reuploadButton: 'Upload again',
-    dropHere: 'Drop file here or click',
+    dropHere: 'Drop ZIP or JSON here, or click',
+    dropActive: 'Drop the file to upload',
     privacyNote: 'Files are read only inside your browser.',
     howToTitle: 'How to get my data',
     howToSteps: [
-      'Request "Followers and following" or "Connections" in JSON.',
-      'Choose "Export to device".',
-      'Wait for the email, then download within the deadline.',
+      'Open Meta Accounts Center and choose "Create export".',
+      'Select the Threads or Instagram profile you want to analyze.',
+      'Choose "Export to device" and JSON format.',
+      'Pick "Followers and following", "Connections", or all available information.',
+      'When the request is ready, download the ZIP and upload the file here, not a screenshot or link.',
     ],
-    threadsHelp: 'Threads help',
-    instagramHelp: 'Instagram export',
+    accountsCenterExport: 'Open Meta Accounts Center export',
+    threadsHelp: 'Threads official help',
+    instagramHelp: 'Instagram official help',
     statusIdle: 'Waiting',
     statusParsing: 'Reading…',
     statusReady: 'Ready',
@@ -167,7 +173,7 @@ const ko: Dict = {
   },
   upload: {
     heroTitle: '데이터 파일을 업로드하세요',
-    heroSubtitle: 'Threads 또는 Instagram에서 받은 ZIP / JSON 파일을 선택하세요.',
+    heroSubtitle: 'Meta Accounts Center에서 export를 만든 뒤, 준비된 ZIP / JSON 파일을 선택하세요.',
     safetyTitle: '계정에 손대지 않아요',
     safetyItems: [
       '로그인 정보, 쿠키, 토큰을 요구하거나 읽지 않습니다.',
@@ -177,16 +183,20 @@ const ko: Dict = {
     ],
     selectButton: '파일 선택',
     reuploadButton: '다시 업로드',
-    dropHere: '파일을 끌어두거나 클릭',
+    dropHere: 'ZIP 또는 JSON 파일을 끌어두거나 클릭',
+    dropActive: '파일을 여기에 놓으세요',
     privacyNote: '파일은 브라우저 안에서만 처리됩니다.',
     howToTitle: '데이터 받는 방법',
     howToSteps: [
-      '"Followers and following" 또는 "Connections"를 JSON으로 요청합니다.',
-      '"Export to device"로 내려받기를 선택합니다.',
-      '준비 메일이 오면 기한 안에 다운로드합니다.',
+      'Meta Accounts Center를 열고 "Create export"를 누릅니다.',
+      '분석할 Threads 또는 Instagram 프로필을 선택합니다.',
+      '"Export to device"와 JSON 형식을 선택합니다.',
+      '"Followers and following", "Connections" 또는 전체 정보를 선택합니다.',
+      '요청이 준비되면 ZIP 파일을 다운로드해 여기에 업로드합니다. 스크린샷이나 링크는 데이터가 아닙니다.',
     ],
-    threadsHelp: 'Threads 도움말',
-    instagramHelp: 'Instagram 정보 내보내기',
+    accountsCenterExport: 'Meta Accounts Center export 열기',
+    threadsHelp: 'Threads 공식 도움말',
+    instagramHelp: 'Instagram 공식 도움말',
     statusIdle: '대기',
     statusParsing: '읽는 중',
     statusReady: '읽기 완료',

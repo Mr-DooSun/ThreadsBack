@@ -30,11 +30,13 @@ What it helps with:
 
 How to use it:
 
-1. Request your Threads or Instagram data in JSON format.
-2. Download the ZIP or JSON export when it is ready.
-3. Open this extension from Chrome's side panel.
-4. Select the export file.
-5. Review the local comparison result.
+1. Open the Meta Accounts Center export screen.
+2. Select the Threads or Instagram profile and request a JSON export.
+3. Choose "Followers and following", "Connections", or all available information when possible.
+4. Download the ZIP or JSON export when the request is ready. The extension needs the file, not a link or screenshot.
+5. Open this extension from Chrome's side panel.
+6. Select the export file.
+7. Review the local comparison result.
 
 This extension works from official export files only. It is not affiliated with, endorsed by, or sponsored by Meta, Instagram, or Threads.
 

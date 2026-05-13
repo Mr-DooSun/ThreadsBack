@@ -3,6 +3,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type DragEvent,
   type MouseEvent,
   type ReactNode,
   type RefObject,
@@ -28,6 +29,8 @@ type ImportStatus = 'idle' | 'parsing' | 'ready' | 'error';
 type Platform = 'threads' | 'instagram';
 
 const HELP_LINKS = {
+  accountsCenter:
+    'https://accountscenter.instagram.com/info_and_permissions/dyi/',
   threads: 'https://www.facebook.com/help/instagram/259803026523198',
   instagram: 'https://www.facebook.com/help/instagram/181231772500920',
 };
@@ -247,6 +250,7 @@ function AppShell() {
           state={state}
           status={importStatus}
           parseResult={parseResult}
+          error={error}
           showHowTo={showHowTo}
           onToggleHowTo={() => setShowHowTo((prev) => !prev)}
           inputRef={fileInputRef}
@@ -262,6 +266,7 @@ function AppShell() {
           onToggleReupload={() => setReuploadOpen((prev) => !prev)}
           status={importStatus}
           parseResult={parseResult}
+          error={error}
           inputRef={fileInputRef}
           onFilesSelected={(files) => void handleFileChange(files)}
           onApply={() => void applyParseResult()}
@@ -413,6 +418,7 @@ function UploadView({
   state,
   status,
   parseResult,
+  error,
   showHowTo,
   onToggleHowTo,
   inputRef,
@@ -422,6 +428,7 @@ function UploadView({
   state: StoredRelationshipState;
   status: ImportStatus;
   parseResult: ExportParseResult | null;
+  error: string | null;
   showHowTo: boolean;
   onToggleHowTo: () => void;
   inputRef: RefObject<HTMLInputElement | null>;
@@ -449,6 +456,8 @@ function UploadView({
         inputRef={inputRef}
         onFilesSelected={onFilesSelected}
       />
+
+      {error && <InlineError>{error}</InlineError>}
 
       {(state.following.length > 0 || state.followers.length > 0) && (
         <div className="rounded-xl border tone-warning p-3 text-[11px] leading-relaxed">
@@ -599,6 +608,7 @@ function ResultsView({
   onToggleReupload,
   status,
   parseResult,
+  error,
   inputRef,
   onFilesSelected,
   onApply,
@@ -614,6 +624,7 @@ function ResultsView({
   onToggleReupload: () => void;
   status: ImportStatus;
   parseResult: ExportParseResult | null;
+  error: string | null;
   inputRef: RefObject<HTMLInputElement | null>;
   onFilesSelected: (files: FileList | null) => void;
   onApply: () => void;
@@ -691,6 +702,7 @@ function ResultsView({
             onFilesSelected={onFilesSelected}
             compact
           />
+          {error && <InlineError>{error}</InlineError>}
           {parseResult && (
             <ParseSummary
               result={parseResult}
@@ -777,22 +789,57 @@ function UploadDropzone({
 }) {
   const { t } = useI18n();
   const isParsing = status === 'parsing';
+  const [isDragActive, setIsDragActive] = useState(false);
+
+  function handleDragOver(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (isParsing) return;
+
+    event.dataTransfer.dropEffect = 'copy';
+    setIsDragActive(true);
+  }
+
+  function handleDragLeave(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragActive(false);
+  }
+
+  function handleDrop(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragActive(false);
+
+    if (isParsing) return;
+    onFilesSelected(event.dataTransfer.files);
+  }
 
   return (
     <label
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
       className={
         (compact
           ? 'themed-card flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-4 text-sm transition-colors '
           : 'themed-card flex cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed px-4 py-8 text-center shadow-sm transition-colors ') +
         'surface-hover ' +
+        (isDragActive ? 'themed-border-strong bg-[var(--accent-soft-bg)] ' : '') +
         (isParsing ? 'pointer-events-none opacity-60' : '')
       }
     >
       <span className="text-sm font-semibold text-strong">
-        {isParsing ? statusLabel(status, t) : t.upload.selectButton}
+        {isParsing
+          ? statusLabel(status, t)
+          : isDragActive
+            ? t.upload.dropActive
+            : t.upload.selectButton}
       </span>
       {!compact && !isParsing && (
-        <span className="text-[11px] text-muted">{t.upload.dropHere}</span>
+        <span className="text-[11px] text-muted">
+          {isDragActive ? t.upload.dropActive : t.upload.dropHere}
+        </span>
       )}
       <input
         ref={inputRef}
@@ -878,6 +925,9 @@ function HowToBlock({
           ))}
         </ol>
         <div className="grid grid-cols-1 gap-1.5">
+          <LinkButton url={HELP_LINKS.accountsCenter} primary>
+            {t.upload.accountsCenterExport}
+          </LinkButton>
           <LinkButton url={HELP_LINKS.threads}>
             {t.upload.threadsHelp}
           </LinkButton>
@@ -937,24 +987,37 @@ function ChevronIcon({ open }: { open: boolean }) {
   );
 }
 
-function LinkButton({ url, children }: { url: string; children: ReactNode }) {
+function LinkButton({
+  url,
+  primary = false,
+  children,
+}: {
+  url: string;
+  primary?: boolean;
+  children: ReactNode;
+}) {
   return (
     <button
       type="button"
       onClick={() => void browser.tabs.create({ url })}
-      className="themed-card surface-hover flex items-center justify-between rounded-lg border px-3 py-2 text-left text-xs font-medium text-default transition-colors"
+      className={
+        'flex items-center justify-between rounded-lg border px-3 py-2 text-left text-xs font-medium transition-colors ' +
+        (primary
+          ? 'btn-primary border-transparent shadow-sm hover:shadow-md'
+          : 'themed-card surface-hover text-default')
+      }
     >
       <span>{children}</span>
-      <ExternalLinkIcon />
+      <ExternalLinkIcon className={primary ? 'text-current' : undefined} />
     </button>
   );
 }
 
-function ExternalLinkIcon() {
+function ExternalLinkIcon({ className = 'text-subtle' }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 24 24"
-      className="h-3.5 w-3.5 text-subtle"
+      className={`h-3.5 w-3.5 ${className}`}
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
@@ -1007,6 +1070,14 @@ function Toast({
           ×
         </button>
       )}
+    </div>
+  );
+}
+
+function InlineError({ children }: { children: ReactNode }) {
+  return (
+    <div className="rounded-xl border tone-danger px-3 py-2 text-[11px] leading-relaxed shadow-sm">
+      {children}
     </div>
   );
 }
