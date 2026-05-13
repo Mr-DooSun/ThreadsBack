@@ -66,6 +66,7 @@ interface Dict {
     skipped: string;
     noRecognized: string;
     applyButton: string;
+    clearSelection: string;
     needBoth: string;
     haveFollowing: (n: number) => string;
     haveFollowers: (n: number) => string;
@@ -276,6 +277,7 @@ const en: Dict = {
     skipped: 'Skipped files',
     noRecognized: 'No files recognized yet.',
     applyButton: 'Apply to analysis',
+    clearSelection: 'Remove files',
     needBoth: 'Need both following and followers to analyze.',
     haveFollowing: (n) => `${n.toLocaleString()} following stored`,
     haveFollowers: (n) => `${n.toLocaleString()} followers stored`,
@@ -491,6 +493,7 @@ const ko: Dict = {
     skipped: '건너뛴 파일',
     noRecognized: '아직 인식한 파일이 없습니다.',
     applyButton: '분석에 반영',
+    clearSelection: '파일 비우기',
     needBoth: '분석하려면 팔로잉과 팔로워가 모두 필요합니다.',
     haveFollowing: (n) => `저장된 팔로잉 ${n.toLocaleString()}명`,
     haveFollowers: (n) => `저장된 팔로워 ${n.toLocaleString()}명`,

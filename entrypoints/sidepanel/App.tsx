@@ -89,6 +89,35 @@ function detectPlatformFromFiles(paths: readonly string[]): Platform | null {
   return null;
 }
 
+function detectPlatformFromParseResult(result: ExportParseResult): Platform | null {
+  const threadsHints = result.platformHints.filter(
+    (hint) => hint === 'threads',
+  ).length;
+  const instagramHints = result.platformHints.filter(
+    (hint) => hint === 'instagram',
+  ).length;
+
+  if (threadsHints > instagramHints) return 'threads';
+  if (instagramHints > threadsHints) return 'instagram';
+
+  const byFilePath = detectPlatformFromFiles(result.recognizedFiles);
+  if (byFilePath) return byFilePath;
+
+  const profileUrls = [...result.following, ...result.followers].map(
+    (account) => account.profileUrl.toLowerCase(),
+  );
+  const threadsCount = profileUrls.filter((url) =>
+    url.includes('threads.net/'),
+  ).length;
+  const instagramCount = profileUrls.filter((url) =>
+    url.includes('instagram.com/'),
+  ).length;
+
+  if (threadsCount > instagramCount) return 'threads';
+  if (instagramCount > threadsCount) return 'instagram';
+  return null;
+}
+
 export default function App() {
   return (
     <I18nProvider>
@@ -174,7 +203,7 @@ function AppShell() {
       setParseResult(result);
       setImportStatus('ready');
 
-      const detected = detectPlatformFromFiles(result.recognizedFiles);
+      const detected = detectPlatformFromParseResult(result);
       if (detected) {
         setPlatform(detected);
       }
@@ -211,6 +240,17 @@ function AppShell() {
     setReuploadOpen(false);
     setReviewUndo(null);
     setNotice(t.notice.applied);
+  }
+
+  function clearParseResult() {
+    setParseResult(null);
+    setImportStatus('idle');
+    setError(null);
+    setNotice(null);
+    setReviewUndo(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   }
 
   async function markReviewed(account: Account) {
@@ -317,6 +357,7 @@ function AppShell() {
           inputRef={fileInputRef}
           onFilesSelected={(files) => void handleFileChange(files)}
           onApply={() => void applyParseResult()}
+          onClear={clearParseResult}
         />
       ) : (
         <ResultsView
@@ -330,6 +371,7 @@ function AppShell() {
           inputRef={fileInputRef}
           onFilesSelected={(files) => void handleFileChange(files)}
           onApply={() => void applyParseResult()}
+          onClear={clearParseResult}
           onMarkReviewed={(account) => void markReviewed(account)}
           onReset={() => void resetAll()}
           platform={platform}
@@ -504,6 +546,7 @@ function UploadView({
   inputRef,
   onFilesSelected,
   onApply,
+  onClear,
 }: {
   state: StoredRelationshipState;
   platform: Platform;
@@ -515,6 +558,7 @@ function UploadView({
   inputRef: RefObject<HTMLInputElement | null>;
   onFilesSelected: (files: FileList | null) => void;
   onApply: () => void;
+  onClear: () => void;
 }) {
   const { t } = useI18n();
 
@@ -558,6 +602,7 @@ function UploadView({
         <ParseSummary
           result={parseResult}
           onApply={onApply}
+          onClear={onClear}
           status={status}
         />
       )}
@@ -696,6 +741,7 @@ function ResultsView({
   inputRef,
   onFilesSelected,
   onApply,
+  onClear,
   onMarkReviewed,
   onReset,
   platform,
@@ -710,6 +756,7 @@ function ResultsView({
   inputRef: RefObject<HTMLInputElement | null>;
   onFilesSelected: (files: FileList | null) => void;
   onApply: () => void;
+  onClear: () => void;
   onMarkReviewed: (account: Account) => void;
   onReset: () => void;
   platform: Platform;
@@ -764,6 +811,7 @@ function ResultsView({
             <ParseSummary
               result={parseResult}
               onApply={onApply}
+              onClear={onClear}
               status={status}
             />
           )}
@@ -974,10 +1022,12 @@ function UploadDropzone({
 function ParseSummary({
   result,
   onApply,
+  onClear,
   status,
 }: {
   result: ExportParseResult;
   onApply: () => void;
+  onClear: () => void;
   status: ImportStatus;
 }) {
   const { t } = useI18n();
@@ -1013,14 +1063,23 @@ function ParseSummary({
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={onApply}
-        disabled={!canApply}
-        className="btn-primary mt-4 w-full rounded-xl px-3 py-2.5 text-sm font-semibold shadow-sm transition-all hover:shadow-md"
-      >
-        {t.upload.applyButton}
-      </button>
+      <div className="mt-4 grid grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-2">
+        <button
+          type="button"
+          onClick={onClear}
+          className="rounded-xl border themed-border bg-[var(--bg-soft)] px-3 py-2.5 text-sm font-semibold text-default transition-colors hover:bg-[var(--bg-page)]"
+        >
+          {t.upload.clearSelection}
+        </button>
+        <button
+          type="button"
+          onClick={onApply}
+          disabled={!canApply}
+          className="btn-primary rounded-xl px-3 py-2.5 text-sm font-semibold shadow-sm transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-55"
+        >
+          {t.upload.applyButton}
+        </button>
+      </div>
     </div>
   );
 }

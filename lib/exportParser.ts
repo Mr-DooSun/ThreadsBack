@@ -12,11 +12,14 @@ export interface ExportSkippedFile {
   reason: string;
 }
 
+export type ExportPlatformHint = 'threads' | 'instagram';
+
 export interface ExportParseResult {
   following: Account[];
   followers: Account[];
   recognizedFiles: string[];
   skippedFiles: ExportSkippedFile[];
+  platformHints: ExportPlatformHint[];
 }
 
 export class ExportParseError extends Error {
@@ -93,6 +96,7 @@ export function parseExportEntries(
   const followers: Account[] = [];
   const recognizedFiles = new Set<string>();
   const skippedFiles = [...initialSkippedFiles];
+  const platformHints = new Set<ExportPlatformHint>();
 
   for (const entry of entries) {
     if (HTML_EXTENSION.test(entry.name)) {
@@ -130,13 +134,15 @@ export function parseExportEntries(
     }
 
     let recognizedAny = false;
+    const platformHint = detectPlatformHint(entry.name, parsed.value);
 
     for (const kind of kinds) {
-      const accounts = extractAccounts(parsed.value, kind);
+      const accounts = extractAccounts(parsed.value, kind, platformHint);
       if (accounts.length === 0) continue;
 
       recognizedAny = true;
       recognizedFiles.add(entry.name);
+      if (platformHint) platformHints.add(platformHint);
 
       if (kind === 'following') {
         following.push(...accounts);
@@ -158,6 +164,7 @@ export function parseExportEntries(
     followers: uniqueAccounts(followers),
     recognizedFiles: [...recognizedFiles].sort(),
     skippedFiles,
+    platformHints: [...platformHints].sort(),
   };
 
   if (result.following.length === 0 && result.followers.length === 0) {
@@ -275,7 +282,48 @@ function detectRelationshipKinds(name: string, value: unknown): SnapshotKind[] {
   return [...kinds];
 }
 
-function extractAccounts(value: unknown, kind: SnapshotKind): Account[] {
+function detectPlatformHint(
+  name: string,
+  value: unknown,
+): ExportPlatformHint | null {
+  const lowerName = name.toLowerCase();
+
+  if (lowerName.includes('/threads/') || lowerName.includes('your_threads')) {
+    return 'threads';
+  }
+
+  if (isRecord(value)) {
+    const keys = Object.keys(value).map((key) => key.toLowerCase());
+    if (keys.some((key) => key.includes('text_post_app'))) {
+      return 'threads';
+    }
+    if (
+      keys.some(
+        (key) =>
+          key === 'relationships_following' ||
+          key === 'relationships_followers' ||
+          /^followers?_\d+$/i.test(key),
+      )
+    ) {
+      return 'instagram';
+    }
+  }
+
+  if (
+    lowerName.includes('/connections/') ||
+    lowerName.includes('followers_and_following')
+  ) {
+    return 'instagram';
+  }
+
+  return null;
+}
+
+function extractAccounts(
+  value: unknown,
+  kind: SnapshotKind,
+  platformHint: ExportPlatformHint | null,
+): Account[] {
   const relationshipItems = extractRelationshipItems(value, kind);
   const accounts: Account[] = [];
 
@@ -296,7 +344,7 @@ function extractAccounts(value: unknown, kind: SnapshotKind): Account[] {
       const href =
         typeof data.href === 'string' && data.href.trim().length > 0
           ? data.href
-          : buildProfileUrl(username);
+          : buildProfileUrl(username, platformHint);
 
       accounts.push({
         username,
@@ -362,8 +410,14 @@ function extractUsernameFromHref(value: unknown): string | null {
   }
 }
 
-function buildProfileUrl(username: string): string {
-  return `https://www.instagram.com/${normalizeUsername(username)}`;
+function buildProfileUrl(
+  username: string,
+  platformHint: ExportPlatformHint | null,
+): string {
+  const normalizedUsername = normalizeUsername(username);
+  return platformHint === 'threads'
+    ? `https://www.threads.net/@${normalizedUsername}`
+    : `https://www.instagram.com/${normalizedUsername}`;
 }
 
 function normalizeDisplayName(value: string): string {

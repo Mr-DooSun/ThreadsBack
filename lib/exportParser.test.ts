@@ -112,6 +112,36 @@ describe('export parser', () => {
     expect(result.followers[0]?.profileUrl).toBe(
       'https://www.threads.net/@thread_follower',
     );
+    expect(result.platformHints).toEqual(['threads']);
+  });
+
+  it('detects Threads relationship keys even when single files have no path or href', () => {
+    const result = parseExportEntries([
+      {
+        name: 'followers.json',
+        content: JSON.stringify({
+          text_post_app_text_post_app_followers: [
+            relationshipEntry('thread_follower', ''),
+          ],
+        }),
+      },
+      {
+        name: 'following.json',
+        content: JSON.stringify({
+          text_post_app_text_post_app_following: [
+            relationshipEntry('thread_following', ''),
+          ],
+        }),
+      },
+    ]);
+
+    expect(result.platformHints).toEqual(['threads']);
+    expect(result.followers[0]?.profileUrl).toBe(
+      'https://www.threads.net/@thread_follower',
+    );
+    expect(result.following[0]?.profileUrl).toBe(
+      'https://www.threads.net/@thread_following',
+    );
   });
 
   it('merges multiple follower shards and removes duplicates', () => {
