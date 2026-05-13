@@ -179,6 +179,46 @@ describe('export parser', () => {
     expect(result.skippedFiles).toEqual([]);
   });
 
+  it('ignores unrelated media and parses Threads relationship files from a zip', async () => {
+    const zip = new JSZip();
+    zip.file('media/posts/photo.jpg', 'not relationship data');
+    zip.file('your_instagram_activity/threads/threads_and_replies.json', '{}');
+    zip.file(
+      'your_instagram_activity/threads/followers.json',
+      JSON.stringify({
+        text_post_app_text_post_app_followers: [
+          relationshipEntry('thread_follower', 'https://www.threads.net/@thread_follower'),
+        ],
+      }),
+    );
+    zip.file(
+      'your_instagram_activity/threads/following.json',
+      JSON.stringify({
+        text_post_app_text_post_app_following: [
+          relationshipEntry('thread_following', 'https://www.threads.net/@thread_following'),
+        ],
+      }),
+    );
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const file = new File([blob], 'threads-export.zip', {
+      type: 'application/zip',
+    });
+
+    const result = await parseExportFiles([file]);
+
+    expect(result.recognizedFiles).toEqual([
+      'your_instagram_activity/threads/followers.json',
+      'your_instagram_activity/threads/following.json',
+    ]);
+    expect(result.followers.map((account) => account.username)).toEqual([
+      'thread_follower',
+    ]);
+    expect(result.following.map((account) => account.username)).toEqual([
+      'thread_following',
+    ]);
+    expect(result.skippedFiles).toEqual([]);
+  });
+
   it('returns a clear error when a zip has no relationship files', async () => {
     const zip = new JSZip();
     zip.file('profile/profile.json', JSON.stringify({ username: 'alpha' }));
@@ -188,7 +228,7 @@ describe('export parser', () => {
     });
 
     await expect(parseExportFiles([file])).rejects.toThrow(
-      'ZIP 안에서 팔로워/팔로잉 JSON 파일을 찾지 못했습니다',
+      'ZIP 안에서 Instagram 또는 Threads 팔로워/팔로잉 JSON 파일을 찾지 못했습니다',
     );
   });
 

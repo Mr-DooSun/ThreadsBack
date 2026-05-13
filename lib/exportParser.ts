@@ -30,7 +30,6 @@ const JSON_EXTENSION = /\.json$/i;
 const ZIP_EXTENSION = /\.zip$/i;
 const HTML_EXTENSION = /\.html?$/i;
 const JSON_FILE_SIZE_LIMIT_BYTES = 100 * 1024 * 1024;
-const ZIP_FILE_SIZE_LIMIT_BYTES = 500 * 1024 * 1024;
 
 export async function parseExportFiles(files: File[]): Promise<ExportParseResult> {
   if (files.length === 0) {
@@ -42,15 +41,6 @@ export async function parseExportFiles(files: File[]): Promise<ExportParseResult
 
   for (const file of files) {
     if (ZIP_EXTENSION.test(file.name)) {
-      if (file.size > ZIP_FILE_SIZE_LIMIT_BYTES) {
-        skippedFiles.push({
-          name: file.name,
-          reason:
-            'ZIP 파일이 500MB를 넘어 브라우저에서 안전하게 처리하지 않았습니다. Meta에서 팔로워/팔로잉 정보만 JSON으로 다시 요청해 주세요.',
-        });
-        continue;
-      }
-
       const zipResult = await readZipEntries(file);
       entries.push(...zipResult.entries);
       skippedFiles.push(...zipResult.skippedFiles);
@@ -196,7 +186,8 @@ async function readZipEntries(file: File): Promise<{
       skippedFiles: [
         {
           name: file.name,
-          reason: 'ZIP 파일을 열지 못했습니다. Meta에서 받은 원본 ZIP 파일인지 확인해 주세요.',
+          reason:
+            'ZIP 파일을 열지 못했습니다. 파일이 너무 크거나 손상되었을 수 있습니다. Meta에서 받은 원본 ZIP 파일인지 확인해 주세요.',
         },
       ],
     };
@@ -221,7 +212,7 @@ async function readZipEntries(file: File): Promise<{
         {
           name: file.name,
           reason:
-            'ZIP 안에서 팔로워/팔로잉 JSON 파일을 찾지 못했습니다. JSON 형식으로 팔로워/팔로잉 정보를 포함해 다시 요청해 주세요.',
+            'ZIP 안에서 Instagram 또는 Threads 팔로워/팔로잉 JSON 파일을 찾지 못했습니다.',
         },
       ],
     };
@@ -241,7 +232,6 @@ function isRelationshipCandidatePath(name: string): boolean {
   return (
     /following|relationships_following/.test(basename) ||
     /followers?(_\d+)?\.(json|html?)$/.test(basename) ||
-    lowerName.includes('followers_and_following') ||
     lowerName.includes('relationships_following') ||
     lowerName.includes('relationships_followers')
   );
