@@ -6,9 +6,13 @@ import {
   parseExportFiles,
 } from './exportParser';
 
-function relationshipEntry(username: string, href = `https://www.instagram.com/${username}`) {
+function relationshipEntry(
+  username: string,
+  href = `https://www.instagram.com/${username}`,
+  title = '',
+) {
   return {
-    title: '',
+    title,
     media_list_data: [],
     string_list_data: [
       {
@@ -45,7 +49,7 @@ describe('export parser', () => {
         name: 'connections/followers_and_following/following.json',
         content: JSON.stringify({
           relationships_following: [
-            relationshipEntry('alpha'),
+            relationshipEntry('alpha', undefined, 'Alpha Name'),
             relationshipEntry('beta'),
           ],
         }),
@@ -56,7 +60,27 @@ describe('export parser', () => {
       'alpha',
       'beta',
     ]);
+    expect(result.following[0]?.displayName).toBe('Alpha Name');
     expect(result.followers).toEqual([]);
+  });
+
+  it('repairs mojibake display names from Meta exports', () => {
+    const result = parseExportEntries([
+      {
+        name: 'your_instagram_activity/threads/following.json',
+        content: JSON.stringify({
+          text_post_app_text_post_app_following: [
+            relationshipEntry(
+              'driver',
+              'https://www.threads.net/@driver',
+              '\u00ec\u00b4\u0088\u00eb\u00b3\u00b4\u00ec\u009a\u00b4\u00ec\u00a0\u0084',
+            ),
+          ],
+        }),
+      },
+    ]);
+
+    expect(result.following[0]?.displayName).toBe('초보운전');
   });
 
   it('parses Threads follower and following exports', () => {

@@ -290,6 +290,8 @@ function extractAccounts(value: unknown, kind: SnapshotKind): Account[] {
   const accounts: Account[] = [];
 
   for (const item of relationshipItems) {
+    const rawDisplayName =
+      isRecord(item) && typeof item.title === 'string' ? item.title : '';
     const stringListData = isRecord(item) ? item.string_list_data : undefined;
     if (!Array.isArray(stringListData)) continue;
 
@@ -308,7 +310,7 @@ function extractAccounts(value: unknown, kind: SnapshotKind): Account[] {
 
       accounts.push({
         username,
-        displayName: '',
+        displayName: normalizeDisplayName(rawDisplayName),
         profileUrl: href,
         firstSeenAt:
           typeof data.timestamp === 'number' ? data.timestamp * 1000 : Date.now(),
@@ -372,6 +374,38 @@ function extractUsernameFromHref(value: unknown): string | null {
 
 function buildProfileUrl(username: string): string {
   return `https://www.instagram.com/${normalizeUsername(username)}`;
+}
+
+function normalizeDisplayName(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+
+  return decodeLatin1Utf8Mojibake(trimmed) ?? trimmed;
+}
+
+function decodeLatin1Utf8Mojibake(value: string): string | null {
+  const bytes: number[] = [];
+
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+    if (code > 255) return null;
+    bytes.push(code);
+  }
+
+  try {
+    const decoded = new TextDecoder('utf-8', { fatal: true }).decode(
+      new Uint8Array(bytes),
+    );
+    const normalized = decoded.trim();
+    if (!normalized || normalized === value) return null;
+    return hasDecodedUnicodeText(normalized) ? normalized : null;
+  } catch {
+    return null;
+  }
+}
+
+function hasDecodedUnicodeText(value: string): boolean {
+  return /[^\u0000-\u00ff]/.test(value);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
