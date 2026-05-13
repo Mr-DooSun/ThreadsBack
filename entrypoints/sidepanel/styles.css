@@ -198,6 +198,57 @@ body {
   background: var(--bg-soft);
 }
 
+.platform-tabs {
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.platform-tab {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px transparent;
+}
+
+.platform-tab:hover {
+  border-color: var(--border-strong);
+  background: var(--accent-soft-bg);
+  color: var(--text-strong);
+  transform: translateY(-1px);
+}
+
+.platform-tab:focus-visible {
+  outline: 2px solid var(--border-strong);
+  outline-offset: 2px;
+}
+
+.platform-tab.is-active {
+  background: var(--brand-grad);
+  border-color: transparent;
+  color: var(--brand-text);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+}
+
+.platform-tab-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  opacity: 0.55;
+}
+
+.platform-tab.is-active .platform-tab-dot {
+  background: currentColor;
+  opacity: 1;
+}
+
 .tab-active {
   background: var(--brand-grad);
   color: var(--brand-text);

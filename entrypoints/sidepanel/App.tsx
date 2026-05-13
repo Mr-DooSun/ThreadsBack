@@ -419,7 +419,11 @@ function PlatformTabs({
 }) {
   return (
     <nav className={embedded ? '' : 'px-4 pt-3'}>
-      <div className="grid grid-cols-2 gap-1 rounded-full themed-soft p-1">
+      <div
+        role="group"
+        aria-label="Platform"
+        className="platform-tabs grid grid-cols-2 gap-1.5 rounded-2xl p-1"
+      >
         <PlatformTab
           active={platform === 'threads'}
           onClick={() => onChange('threads')}
@@ -473,13 +477,11 @@ function PlatformTab({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={
-        'rounded-full px-3 py-1.5 text-xs font-semibold tracking-wide transition-all ' +
-        (active
-          ? 'tab-active shadow-sm'
-          : 'text-muted hover:text-strong')
-      }
+      className={`platform-tab rounded-xl px-3 py-2 text-xs font-semibold tracking-wide transition-all ${
+        active ? 'is-active' : ''
+      }`}
     >
+      <span className="platform-tab-dot" aria-hidden />
       {children}
     </button>
   );
