@@ -652,7 +652,7 @@ function ResultsView({
       {reviewCount === 0 ? (
         <ZeroState />
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {analysis.reviewAccounts.map((account) => (
             <AccountRow
               key={account.username}
@@ -675,7 +675,7 @@ function ResultsView({
           open={showKept}
           onToggle={onToggleKeptList}
         >
-          <ul className="space-y-2 p-3">
+          <ul className="space-y-3 p-3">
             {analysis.keptAccounts.map((account) => (
               <AccountRow
                 key={account.username}
@@ -1795,14 +1795,21 @@ function AccountRow({
       <button
         type="button"
         onClick={openProfile}
-        className="flex w-full items-center gap-3 px-3 py-2.5 text-left"
+        className="flex w-full items-center gap-3 px-3.5 py-3.5 text-left"
         aria-label={`${t.result.profile} @${account.username}`}
       >
         <Avatar account={account} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-strong">
-            {account.displayName || account.username}
-          </p>
+          <div className="flex min-w-0 items-center gap-2">
+            <p className="truncate text-sm font-semibold text-strong">
+              {account.displayName || account.username}
+            </p>
+            {account.kept && (
+              <span className="shrink-0 rounded-full bg-[var(--kept-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--kept-text)]">
+                {t.result.keptBadge}
+              </span>
+            )}
+          </div>
           <p className="truncate text-[11px] text-muted">
             @{account.username}
           </p>
@@ -1815,17 +1822,19 @@ function AccountRow({
             handleAction(event, () => onToggleKeep(account.username))
           }
           active={!!account.kept}
-        >
-          {account.kept ? t.result.keepUndo : t.result.keep}
-        </RowAction>
+          variant="keep"
+          label={account.kept ? t.result.keepUndo : t.result.keep}
+          description={account.kept ? t.result.keepUndoHint : t.result.keepHint}
+        />
         <span className="w-px bg-[var(--border)]" aria-hidden />
         <RowAction
           onClick={(event) =>
             handleAction(event, () => onToggleHidden(account.username))
           }
-        >
-          {t.result.hide}
-        </RowAction>
+          variant="hide"
+          label={t.result.hide}
+          description={t.result.hideHint}
+        />
       </div>
     </li>
   );
@@ -1834,22 +1843,35 @@ function AccountRow({
 function RowAction({
   onClick,
   active,
-  children,
+  variant,
+  label,
+  description,
 }: {
   onClick: (event: MouseEvent<HTMLButtonElement>) => void;
   active?: boolean;
-  children: ReactNode;
+  variant: 'keep' | 'hide';
+  label: string;
+  description: string;
 }) {
+  const toneClass =
+    variant === 'keep'
+      ? active
+        ? 'row-action-keep-active'
+        : 'row-action-keep'
+      : 'row-action-hide';
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className={
-        'flex-1 px-2 py-2 text-[11px] font-semibold transition-colors ' +
-        (active ? 'row-action-active' : 'text-muted hover:text-strong surface-hover')
-      }
+      className={`flex-1 px-3 py-3 text-left transition-colors ${toneClass}`}
     >
-      {children}
+      <span className="block text-[11px] font-bold leading-tight">
+        {label}
+      </span>
+      <span className="mt-0.5 block text-[10px] font-medium leading-tight opacity-75">
+        {description}
+      </span>
     </button>
   );
 }

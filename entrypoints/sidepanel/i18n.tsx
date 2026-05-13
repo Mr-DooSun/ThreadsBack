@@ -78,7 +78,11 @@ interface Dict {
     openOn: string;
     keep: string;
     keepUndo: string;
+    keepHint: string;
+    keepUndoHint: string;
+    keptBadge: string;
     hide: string;
+    hideHint: string;
     keptCount: (n: number) => string;
     keptHide: string;
     hiddenSummary: (n: number) => string;
@@ -277,9 +281,13 @@ const en: Dict = {
     safetyNote: 'To reduce policy and account restriction risks, this extension only helps you review accounts. It never follows, unfollows, or changes your Threads or Instagram account.',
     profile: 'Open profile',
     openOn: 'Open on',
-    keep: 'Keep',
-    keepUndo: 'Unkeep',
+    keep: 'Keep visible',
+    keepUndo: 'Remove keep',
+    keepHint: 'Review later',
+    keepUndoHint: 'Back to review',
+    keptBadge: 'Kept',
     hide: 'Hide',
+    hideHint: 'Remove from review',
     keptCount: (n) => `Kept list (${n.toLocaleString()})`,
     keptHide: 'Hide kept list',
     hiddenSummary: (n) => `${n.toLocaleString()} hidden`,
@@ -478,9 +486,13 @@ const ko: Dict = {
     safetyNote: '정책 위반과 계정 제한 리스크를 줄이기 위해, 이 확장 프로그램은 확인을 돕기만 합니다. Threads 또는 Instagram 계정의 팔로우 상태를 대신 변경하지 않습니다.',
     profile: '프로필',
     openOn: '프로필 열기',
-    keep: '유지',
+    keep: '유지 목록',
     keepUndo: '유지 해제',
+    keepHint: '나중에 다시 보기',
+    keepUndoHint: '일반 목록으로 이동',
+    keptBadge: '유지 중',
     hide: '숨기기',
+    hideHint: '검토 목록에서 제외',
     keptCount: (n) => `유지 목록 (${n.toLocaleString()})`,
     keptHide: '유지 목록 닫기',
     hiddenSummary: (n) => `숨긴 항목 ${n.toLocaleString()}개`,
