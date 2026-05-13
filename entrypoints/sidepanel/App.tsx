@@ -246,7 +246,16 @@ function AppShell() {
       className="themed-bg min-h-screen w-full text-strong transition-colors"
     >
       <Header />
-      <PlatformTabs platform={platform} onChange={setPlatform} />
+      {hasData ? (
+        <ReviewControlBar
+          platform={platform}
+          onPlatformChange={setPlatform}
+          profileOpenMode={profileOpenMode}
+          onProfileOpenModeChange={setProfileOpenMode}
+        />
+      ) : (
+        <PlatformTabs platform={platform} onChange={setPlatform} />
+      )}
 
       {(error || notice) && (
         <section className="px-4 pt-3">
@@ -280,7 +289,6 @@ function AppShell() {
         <ResultsView
           analysis={analysis}
           profileOpenMode={profileOpenMode}
-          onProfileOpenModeChange={setProfileOpenMode}
           reuploadOpen={reuploadOpen}
           onToggleReupload={() => setReuploadOpen((prev) => !prev)}
           status={importStatus}
@@ -328,12 +336,14 @@ function Header() {
 function PlatformTabs({
   platform,
   onChange,
+  embedded = false,
 }: {
   platform: Platform;
   onChange: (next: Platform) => void;
+  embedded?: boolean;
 }) {
   return (
-    <nav className="px-4 pt-3">
+    <nav className={embedded ? '' : 'px-4 pt-3'}>
       <div className="grid grid-cols-2 gap-1 rounded-full themed-soft p-1">
         <PlatformTab
           active={platform === 'threads'}
@@ -349,6 +359,28 @@ function PlatformTabs({
         </PlatformTab>
       </div>
     </nav>
+  );
+}
+
+function ReviewControlBar({
+  platform,
+  onPlatformChange,
+  profileOpenMode,
+  onProfileOpenModeChange,
+}: {
+  platform: Platform;
+  onPlatformChange: (next: Platform) => void;
+  profileOpenMode: ProfileOpenMode;
+  onProfileOpenModeChange: (next: ProfileOpenMode) => void;
+}) {
+  return (
+    <section className="themed-bg sticky top-14 z-10 space-y-2 px-4 pb-3 pt-3">
+      <PlatformTabs platform={platform} onChange={onPlatformChange} embedded />
+      <ProfileOpenModeControl
+        mode={profileOpenMode}
+        onChange={onProfileOpenModeChange}
+      />
+    </section>
   );
 }
 
@@ -623,7 +655,6 @@ function HeroIcon() {
 function ResultsView({
   analysis,
   profileOpenMode,
-  onProfileOpenModeChange,
   reuploadOpen,
   onToggleReupload,
   status,
@@ -638,7 +669,6 @@ function ResultsView({
 }: {
   analysis: NonNullable<ReturnType<typeof analyzeRelationships>>;
   profileOpenMode: ProfileOpenMode;
-  onProfileOpenModeChange: (next: ProfileOpenMode) => void;
   reuploadOpen: boolean;
   onToggleReupload: () => void;
   status: ImportStatus;
@@ -657,10 +687,6 @@ function ResultsView({
   return (
     <section className="space-y-4 px-4 pb-8 pt-4">
       <HeroStat count={reviewCount} />
-      <ProfileOpenModeControl
-        mode={profileOpenMode}
-        onChange={onProfileOpenModeChange}
-      />
 
       <p className="rounded-xl border themed-border bg-[var(--bg-soft)] px-3 py-2 text-[11px] leading-relaxed text-muted">
         {t.result.safetyNote}
