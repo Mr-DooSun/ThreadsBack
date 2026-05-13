@@ -271,11 +271,15 @@ function detectRelationshipKinds(name: string, value: unknown): SnapshotKind[] {
   }
 
   if (isRecord(value)) {
-    if ('relationships_following' in value) kinds.add('following');
+    if (Object.keys(value).some(isFollowingRelationshipKey)) {
+      kinds.add('following');
+    }
     if (Object.keys(value).some((key) => /^followers?_\d+$/i.test(key))) {
       kinds.add('followers');
     }
-    if ('relationships_followers' in value) kinds.add('followers');
+    if (Object.keys(value).some(isFollowersRelationshipKey)) {
+      kinds.add('followers');
+    }
   }
 
   return [...kinds];
@@ -321,21 +325,37 @@ function extractRelationshipItems(value: unknown, kind: SnapshotKind): unknown[]
   if (!isRecord(value)) return [];
 
   if (kind === 'following') {
-    const direct = value.relationships_following;
-    return Array.isArray(direct) ? direct : [];
+    return extractArrayItemsByKey(value, isFollowingRelationshipKey);
   }
 
-  const followersItems: unknown[] = [];
-  const direct = value.relationships_followers;
-  if (Array.isArray(direct)) followersItems.push(...direct);
+  return extractArrayItemsByKey(value, isFollowersRelationshipKey);
+}
 
+function extractArrayItemsByKey(
+  value: Record<string, unknown>,
+  keyMatcher: (key: string) => boolean,
+): unknown[] {
+  const items: unknown[] = [];
   for (const [key, nestedValue] of Object.entries(value)) {
-    if (/^followers?_\d+$/i.test(key) && Array.isArray(nestedValue)) {
-      followersItems.push(...nestedValue);
+    if (keyMatcher(key) && Array.isArray(nestedValue)) {
+      items.push(...nestedValue);
     }
   }
+  return items;
+}
 
-  return followersItems;
+function isFollowingRelationshipKey(key: string): boolean {
+  const lowerKey = key.toLowerCase();
+  return lowerKey === 'following' || lowerKey.endsWith('_following');
+}
+
+function isFollowersRelationshipKey(key: string): boolean {
+  const lowerKey = key.toLowerCase();
+  return (
+    lowerKey === 'followers' ||
+    lowerKey.endsWith('_followers') ||
+    /^followers?_\d+$/i.test(lowerKey)
+  );
 }
 
 function extractUsernameFromHref(value: unknown): string | null {

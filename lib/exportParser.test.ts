@@ -59,6 +59,37 @@ describe('export parser', () => {
     expect(result.followers).toEqual([]);
   });
 
+  it('parses Threads follower and following exports', () => {
+    const result = parseExportEntries([
+      {
+        name: 'your_instagram_activity/threads/followers.json',
+        content: JSON.stringify({
+          text_post_app_text_post_app_followers: [
+            relationshipEntry('thread_follower', 'https://www.threads.net/@thread_follower'),
+          ],
+        }),
+      },
+      {
+        name: 'your_instagram_activity/threads/following.json',
+        content: JSON.stringify({
+          text_post_app_text_post_app_following: [
+            relationshipEntry('thread_following', 'https://www.threads.net/@thread_following'),
+          ],
+        }),
+      },
+    ]);
+
+    expect(result.followers.map((account) => account.username)).toEqual([
+      'thread_follower',
+    ]);
+    expect(result.following.map((account) => account.username)).toEqual([
+      'thread_following',
+    ]);
+    expect(result.followers[0]?.profileUrl).toBe(
+      'https://www.threads.net/@thread_follower',
+    );
+  });
+
   it('merges multiple follower shards and removes duplicates', () => {
     const result = parseExportEntries([
       {
