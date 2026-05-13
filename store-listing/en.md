@@ -2,21 +2,21 @@
 
 ## Package Title
 
-Who Unfollowed Me? for Threads & Instagram
+Threads & Instagram Follow Back Checker
 
 ## Package Summary
 
-Find accounts you follow that do not follow you back using only your local export file.
+Check who does not follow you back on Threads or Instagram using only your local export file.
 
 ## Category
 
-Recommended: Productivity
+Recommended: Tools
 
-If Productivity is not available in your dashboard, use Tools.
+If Tools is not available in your dashboard, use Productivity.
 
 ## Description
 
-Who Unfollowed Me? for Threads & Instagram is a small local tool for checking your Threads or Instagram relationships from the official data export you download yourself. Select your ZIP or JSON export, and the extension compares the accounts you follow with the accounts that follow you back.
+Threads & Instagram Follow Back Checker is a small local tool for checking who does not follow you back from the official Threads or Instagram data export you download yourself. Select your ZIP or JSON export, and the extension compares the accounts you follow with the accounts that follow you back.
 
 It does not read your Threads or Instagram pages, log in for you, scrape content, automate follows or unfollows, or send your file to a server. The file is parsed in your browser, and the saved analysis stays in Chrome's local storage.
 
@@ -38,6 +38,9 @@ How to use it:
 7. Review the local comparison result.
 
 This extension works from official export files only. It is not affiliated with, endorsed by, or sponsored by Meta, Instagram, or Threads.
+
+See the full release history on GitHub Releases:
+https://github.com/Mr-DooSun/ThreadsBack/releases
 
 ## Homepage URL
 

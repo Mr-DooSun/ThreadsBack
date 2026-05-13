@@ -1,6 +1,6 @@
 {
   "extensionName": {
-    "message": "誰がフォローを外した？ - Threads/Instagramフォロバ確認",
+    "message": "Threads/Instagram フォロバ確認",
     "description": "Chrome拡張機能の名前です。"
   },
   "extensionShortName": {
@@ -8,11 +8,11 @@
     "description": "Chrome拡張機能の短い名前です。"
   },
   "extensionDescription": {
-    "message": "自分のデータファイルだけを使って、フォローバックしていないアカウントをブラウザ内で確認します。",
+    "message": "自分のデータファイルだけで、ThreadsやInstagramでフォロバされていないアカウントを確認します。",
     "description": "Chrome拡張機能の説明です。"
   },
   "extensionActionTitle": {
-    "message": "誰がフォローを外した？ - Threads/Instagramフォロバ確認",
+    "message": "Threads/Instagram フォロバ確認",
     "description": "ツールバーアクションのタイトルです。"
   }
 }

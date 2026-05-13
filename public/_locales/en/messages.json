@@ -1,18 +1,18 @@
 {
   "extensionName": {
-    "message": "Who Unfollowed Me? for Threads & Instagram",
+    "message": "Threads & Instagram Follow Back Checker",
     "description": "Chrome extension name."
   },
   "extensionShortName": {
-    "message": "FollowMirror",
+    "message": "Follow Back Check",
     "description": "Short Chrome extension name."
   },
   "extensionDescription": {
-    "message": "Find accounts you follow that do not follow you back using only your local export file.",
+    "message": "Check who does not follow you back on Threads or Instagram using only your local export file.",
     "description": "Chrome extension description."
   },
   "extensionActionTitle": {
-    "message": "Who Unfollowed Me? for Threads & Instagram",
+    "message": "Threads & Instagram Follow Back Checker",
     "description": "Toolbar action title."
   }
 }

@@ -111,7 +111,7 @@ interface Dict {
 
 const en: Dict = {
   app: {
-    name: 'Who Unfollowed Me?',
+    name: 'Follow Back Checker',
     tagline: 'Local-only analysis of your own data export.',
   },
   header: {
@@ -323,7 +323,7 @@ const en: Dict = {
 
 const ko: Dict = {
   app: {
-    name: '누가 뒷삭했을까?',
+    name: '맞팔 확인',
     tagline: '내 데이터로 브라우저에서만 분석합니다.',
   },
   header: {
@@ -540,7 +540,7 @@ const ko: Dict = {
 
 const ja: Dict = {
   app: {
-    name: '誰がフォローを外した？',
+    name: 'フォロバ確認',
     tagline: '自分のデータをブラウザ内だけで分析します。',
   },
   header: {
