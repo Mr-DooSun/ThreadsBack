@@ -8,7 +8,7 @@ This extension lets users compare their own Threads or Instagram following and f
 
 ### storage
 
-Used to save the local analysis result, kept accounts, hidden accounts, language preference, and selected platform preference in Chrome local storage.
+Used to save the local analysis result, reviewed accounts, language preference, and selected platform preference in Chrome local storage.
 
 ### sidePanel
 
@@ -18,7 +18,7 @@ Used to provide the extension interface in Chrome's side panel.
 
 The extension handles user-provided Threads or Instagram export files selected through the file picker. Files are parsed locally in the browser. Export files are not uploaded, transmitted, sold, or shared with third parties.
 
-The extension may store parsed account usernames, profile links, review states, kept accounts, and hidden accounts in Chrome local storage so the user can continue reviewing later.
+The extension may store parsed account usernames, profile links, and reviewed account states in Chrome local storage so the user can continue reviewing later.
 
 ## Remote Code
 
@@ -32,4 +32,3 @@ Suggested answers:
 - Does not transfer user data to third parties
 - Does not use user data for unrelated purposes
 - Does not use user data to determine creditworthiness or for lending purposes
-

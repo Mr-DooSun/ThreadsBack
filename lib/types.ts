@@ -7,7 +7,6 @@ export interface Account {
   profileUrl: string;
   firstSeenAt: number;
   hidden?: boolean;
-  kept?: boolean;
 }
 
 export interface RelationshipSnapshot {
@@ -22,7 +21,6 @@ export interface RelationshipAnalysis {
   followerCount: number;
   notFollowingBack: Account[];
   reviewAccounts: Account[];
-  keptAccounts: Account[];
   hiddenCount: number;
 }
 
@@ -30,7 +28,6 @@ export interface StoredRelationshipState {
   version: 1;
   following: Account[];
   followers: Account[];
-  keptUsernames: string[];
   hiddenUsernames: string[];
   updatedAt?: number;
 }

@@ -8,7 +8,6 @@ export const EMPTY_STATE: StoredRelationshipState = {
   version: 1,
   following: [],
   followers: [],
-  keptUsernames: [],
   hiddenUsernames: [],
 };
 
@@ -29,7 +28,6 @@ export async function saveRelationshipState(
       ...state,
       following: uniqueAccounts(state.following),
       followers: uniqueAccounts(state.followers),
-      keptUsernames: uniqueStrings(state.keptUsernames),
       hiddenUsernames: uniqueStrings(state.hiddenUsernames),
       updatedAt: Date.now(),
     },
@@ -80,13 +78,12 @@ export function clearSnapshotKind(
   };
 }
 
-export function toggleUsernameFlag(
+export function toggleReviewedUsername(
   state: StoredRelationshipState,
-  key: 'hiddenUsernames' | 'keptUsernames',
   username: string,
 ): StoredRelationshipState {
   const normalized = normalizeUsername(username);
-  const values = new Set(state[key].map(normalizeUsername));
+  const values = new Set(state.hiddenUsernames.map(normalizeUsername));
 
   if (values.has(normalized)) {
     values.delete(normalized);
@@ -96,7 +93,7 @@ export function toggleUsernameFlag(
 
   return {
     ...state,
-    [key]: [...values].sort(),
+    hiddenUsernames: [...values].sort(),
     updatedAt: Date.now(),
   };
 }
@@ -110,7 +107,6 @@ function parseStoredState(value: unknown): StoredRelationshipState {
     version: 1,
     following: parseAccounts(value.following),
     followers: parseAccounts(value.followers),
-    keptUsernames: parseStrings(value.keptUsernames),
     hiddenUsernames: parseStrings(value.hiddenUsernames),
     updatedAt:
       typeof value.updatedAt === 'number' ? value.updatedAt : undefined,
@@ -134,7 +130,6 @@ function parseAccounts(value: unknown): Account[] {
         firstSeenAt:
           typeof item.firstSeenAt === 'number' ? item.firstSeenAt : Date.now(),
         hidden: typeof item.hidden === 'boolean' ? item.hidden : undefined,
-        kept: typeof item.kept === 'boolean' ? item.kept : undefined,
       };
     }),
   );

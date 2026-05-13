@@ -29,7 +29,6 @@ export function uniqueAccounts(accounts: Account[]): Account[] {
       profileUrl: existing.profileUrl || account.profileUrl,
       firstSeenAt: Math.min(existing.firstSeenAt, account.firstSeenAt),
       hidden: existing.hidden || account.hidden,
-      kept: existing.kept || account.kept,
     });
   }
 
@@ -51,7 +50,6 @@ export function analyzeRelationships(
   const followerUsernames = new Set(
     state.followers.map((account) => normalizeUsername(account.username)),
   );
-  const keptUsernames = new Set(state.keptUsernames.map(normalizeUsername));
   const hiddenUsernames = new Set(state.hiddenUsernames.map(normalizeUsername));
 
   const notFollowingBack = uniqueAccounts(state.following)
@@ -60,15 +58,11 @@ export function analyzeRelationships(
       const username = normalizeUsername(account.username);
       return {
         ...account,
-        kept: keptUsernames.has(username),
         hidden: hiddenUsernames.has(username),
       };
     });
 
-  const reviewAccounts = notFollowingBack.filter(
-    (account) => !account.kept && !account.hidden,
-  );
-  const keptAccounts = notFollowingBack.filter((account) => account.kept);
+  const reviewAccounts = notFollowingBack.filter((account) => !account.hidden);
   const hiddenCount = notFollowingBack.filter((account) => account.hidden).length;
 
   return {
@@ -77,7 +71,6 @@ export function analyzeRelationships(
     followerCount: uniqueAccounts(state.followers).length,
     notFollowingBack,
     reviewAccounts,
-    keptAccounts,
     hiddenCount,
   };
 }

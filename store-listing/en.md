@@ -24,8 +24,7 @@ What it helps with:
 
 - See accounts you follow that are not in your followers export
 - Open profiles to review them manually
-- Mark accounts you want to keep
-- Hide items you have already checked
+- Mark accounts as reviewed after you have checked them
 - Clear stored data whenever you want
 
 How to use it:

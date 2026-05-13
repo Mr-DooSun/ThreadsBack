@@ -40,9 +40,6 @@ body,
   --danger-bg: rgba(244, 63, 94, 0.16);
   --danger-border: rgba(244, 63, 94, 0.42);
   --danger-text: #fecdd3;
-  --kept-bg: rgba(34, 197, 94, 0.16);
-  --kept-border: rgba(34, 197, 94, 0.42);
-  --kept-text: #bbf7d0;
   --avatar-bg: linear-gradient(135deg, #27272a 0%, #18181b 100%);
   --avatar-text: #d4d4d8;
 }
@@ -79,9 +76,6 @@ body,
   --danger-bg: #fef2f2;
   --danger-border: #fecaca;
   --danger-text: #b91c1c;
-  --kept-bg: #ecfdf5;
-  --kept-border: #a7f3d0;
-  --kept-text: #047857;
   --avatar-bg: linear-gradient(135deg, #fef3c7 0%, #fbcfe8 100%);
   --avatar-text: #b91c1c;
 }
@@ -193,25 +187,6 @@ body {
 
 .tone-danger-link:hover {
   background: var(--danger-bg);
-}
-
-.row-action-keep,
-.row-action-keep-active {
-  color: var(--kept-text);
-}
-
-.row-action-keep:hover,
-.row-action-keep-active {
-  background: var(--kept-bg);
-}
-
-.row-action-keep-active {
-  color: var(--kept-text);
-}
-
-.row-action-keep-active:hover {
-  background: var(--kept-bg);
-  filter: brightness(1.1);
 }
 
 .row-action-hide {

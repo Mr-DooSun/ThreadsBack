@@ -76,18 +76,13 @@ interface Dict {
     safetyNote: string;
     profile: string;
     openOn: string;
-    keep: string;
-    keepUndo: string;
-    keepHint: string;
-    keepUndoHint: string;
-    keptBadge: string;
     hide: string;
     hideHint: string;
-    keptCount: (n: number) => string;
-    keptHide: string;
     hiddenSummary: (n: number) => string;
     zeroTitle: string;
     zeroBody: string;
+    zeroReviewedTitle: string;
+    zeroReviewedBody: string;
     reupload: string;
     resetData: string;
   };
@@ -281,23 +276,18 @@ const en: Dict = {
     haveFollowers: (n) => `${n.toLocaleString()} followers stored`,
   },
   result: {
-    statLabel: "Don't follow you back",
-    statHint: "Accounts you follow that don't follow you.",
+    statLabel: 'To review',
+    statHint: "Accounts you follow that don't follow you back and are not marked yet.",
     safetyNote: 'To reduce policy and account restriction risks, this extension only helps you review accounts. It never follows, unfollows, or changes your Threads or Instagram account.',
     profile: 'Open profile',
     openOn: 'Open on',
-    keep: 'Keep visible',
-    keepUndo: 'Remove keep',
-    keepHint: 'Review later',
-    keepUndoHint: 'Back to review',
-    keptBadge: 'Kept',
-    hide: 'Hide',
-    hideHint: 'Remove from review',
-    keptCount: (n) => `Kept list (${n.toLocaleString()})`,
-    keptHide: 'Hide kept list',
-    hiddenSummary: (n) => `${n.toLocaleString()} hidden`,
+    hide: 'Reviewed',
+    hideHint: 'Mark as handled',
+    hiddenSummary: (n) => `${n.toLocaleString()} reviewed`,
     zeroTitle: 'All caught up',
     zeroBody: 'Everyone you follow follows you back.',
+    zeroReviewedTitle: 'Review complete',
+    zeroReviewedBody: 'No remaining accounts to review. Reviewed records are saved locally.',
     reupload: 'Upload new data',
     resetData: 'Clear stored data',
   },
@@ -496,23 +486,18 @@ const ko: Dict = {
     haveFollowers: (n) => `저장된 팔로워 ${n.toLocaleString()}명`,
   },
   result: {
-    statLabel: '맞팔하지 않는 계정',
-    statHint: '내가 팔로우하지만 나를 팔로우하지 않는 계정.',
+    statLabel: '검토할 계정',
+    statHint: '아직 처리하지 않은 맞팔 제외 계정.',
     safetyNote: '정책 위반과 계정 제한 리스크를 줄이기 위해, 이 확장 프로그램은 확인을 돕기만 합니다. Threads 또는 Instagram 계정의 팔로우 상태를 대신 변경하지 않습니다.',
     profile: '프로필',
     openOn: '프로필 열기',
-    keep: '유지 목록',
-    keepUndo: '유지 해제',
-    keepHint: '나중에 다시 보기',
-    keepUndoHint: '일반 목록으로 이동',
-    keptBadge: '유지 중',
-    hide: '숨기기',
-    hideHint: '검토 목록에서 제외',
-    keptCount: (n) => `유지 목록 (${n.toLocaleString()})`,
-    keptHide: '유지 목록 닫기',
-    hiddenSummary: (n) => `숨긴 항목 ${n.toLocaleString()}개`,
+    hide: '검토 완료',
+    hideHint: '언팔했거나 더 볼 필요 없음',
+    hiddenSummary: (n) => `검토 완료한 계정 ${n.toLocaleString()}개`,
     zeroTitle: '모두 맞팔로우 중',
     zeroBody: '내가 팔로우하는 모든 계정이 나를 팔로우하고 있어요.',
+    zeroReviewedTitle: '검토 완료',
+    zeroReviewedBody: '남은 검토 항목이 없습니다. 검토 완료 기록은 기기에 남아 있어요.',
     reupload: '새 데이터 업로드',
     resetData: '저장된 데이터 초기화',
   },

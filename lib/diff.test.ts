@@ -23,7 +23,6 @@ describe('relationship diff', () => {
       version: 1,
       following: [account('alpha'), account('beta'), account('gamma')],
       followers: [account('beta')],
-      keptUsernames: ['gamma'],
       hiddenUsernames: ['alpha'],
     };
 
@@ -33,8 +32,9 @@ describe('relationship diff', () => {
       'alpha',
       'gamma',
     ]);
-    expect(analysis.reviewAccounts).toHaveLength(0);
-    expect(analysis.keptAccounts.map((item) => item.username)).toEqual(['gamma']);
+    expect(analysis.reviewAccounts.map((item) => item.username)).toEqual([
+      'gamma',
+    ]);
     expect(analysis.hiddenCount).toBe(1);
   });
 });

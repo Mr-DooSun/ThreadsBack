@@ -20,7 +20,7 @@ import {
   replaceSnapshotAccounts,
   resetRelationshipState,
   saveRelationshipState,
-  toggleUsernameFlag,
+  toggleReviewedUsername,
 } from '../../lib/storage';
 import type { Account, StoredRelationshipState } from '../../lib/types';
 import { I18nProvider, useI18n, type Locale } from './i18n';
@@ -89,7 +89,6 @@ function AppShell() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [showHowTo, setShowHowTo] = useState(false);
-  const [showKept, setShowKept] = useState(false);
   const [reuploadOpen, setReuploadOpen] = useState(false);
   const [platform, setPlatformState] = useState<Platform>(DEFAULT_PLATFORM);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -183,13 +182,10 @@ function AppShell() {
     setNotice(t.notice.applied);
   }
 
-  async function toggleFlag(
-    key: 'hiddenUsernames' | 'keptUsernames',
-    username: string,
-  ) {
+  async function toggleReviewed(username: string) {
     if (!state) return;
 
-    const nextState = toggleUsernameFlag(state, key, username);
+    const nextState = toggleReviewedUsername(state, username);
     await saveRelationshipState(nextState);
     setState(nextState);
   }
@@ -202,7 +198,6 @@ function AppShell() {
     setParseResult(null);
     setImportStatus('idle');
     setReuploadOpen(false);
-    setShowKept(false);
     setError(null);
     setNotice(t.notice.reset);
   }
@@ -259,8 +254,6 @@ function AppShell() {
       ) : (
         <ResultsView
           analysis={analysis}
-          showKept={showKept}
-          onToggleKeptList={() => setShowKept((prev) => !prev)}
           reuploadOpen={reuploadOpen}
           onToggleReupload={() => setReuploadOpen((prev) => !prev)}
           status={importStatus}
@@ -269,12 +262,7 @@ function AppShell() {
           inputRef={fileInputRef}
           onFilesSelected={(files) => void handleFileChange(files)}
           onApply={() => void applyParseResult()}
-          onToggleKeep={(username) =>
-            void toggleFlag('keptUsernames', username)
-          }
-          onToggleHidden={(username) =>
-            void toggleFlag('hiddenUsernames', username)
-          }
+          onToggleReviewed={(username) => void toggleReviewed(username)}
           onReset={() => void resetAll()}
           platform={platform}
         />
@@ -607,8 +595,6 @@ function HeroIcon() {
 
 function ResultsView({
   analysis,
-  showKept,
-  onToggleKeptList,
   reuploadOpen,
   onToggleReupload,
   status,
@@ -617,14 +603,11 @@ function ResultsView({
   inputRef,
   onFilesSelected,
   onApply,
-  onToggleKeep,
-  onToggleHidden,
+  onToggleReviewed,
   onReset,
   platform,
 }: {
   analysis: NonNullable<ReturnType<typeof analyzeRelationships>>;
-  showKept: boolean;
-  onToggleKeptList: () => void;
   reuploadOpen: boolean;
   onToggleReupload: () => void;
   status: ImportStatus;
@@ -633,8 +616,7 @@ function ResultsView({
   inputRef: RefObject<HTMLInputElement | null>;
   onFilesSelected: (files: FileList | null) => void;
   onApply: () => void;
-  onToggleKeep: (username: string) => void;
-  onToggleHidden: (username: string) => void;
+  onToggleReviewed: (username: string) => void;
   onReset: () => void;
   platform: Platform;
 }) {
@@ -650,7 +632,7 @@ function ResultsView({
       </p>
 
       {reviewCount === 0 ? (
-        <ZeroState />
+        <ZeroState reviewed={analysis.notFollowingBack.length > 0} />
       ) : (
         <ul className="space-y-3">
           {analysis.reviewAccounts.map((account) => (
@@ -658,35 +640,10 @@ function ResultsView({
               key={account.username}
               account={account}
               platform={platform}
-              onToggleKeep={onToggleKeep}
-              onToggleHidden={onToggleHidden}
+              onToggleReviewed={onToggleReviewed}
             />
           ))}
         </ul>
-      )}
-
-      {analysis.keptAccounts.length > 0 && (
-        <Disclosure
-          label={
-            showKept
-              ? t.result.keptHide
-              : t.result.keptCount(analysis.keptAccounts.length)
-          }
-          open={showKept}
-          onToggle={onToggleKeptList}
-        >
-          <ul className="space-y-3 p-3">
-            {analysis.keptAccounts.map((account) => (
-              <AccountRow
-                key={account.username}
-                account={account}
-                platform={platform}
-                onToggleKeep={onToggleKeep}
-                onToggleHidden={onToggleHidden}
-              />
-            ))}
-          </ul>
-        </Disclosure>
       )}
 
       {analysis.hiddenCount > 0 && (
@@ -756,8 +713,10 @@ function HeroStat({ count }: { count: number }) {
   );
 }
 
-function ZeroState() {
+function ZeroState({ reviewed }: { reviewed: boolean }) {
   const { t } = useI18n();
+  const title = reviewed ? t.result.zeroReviewedTitle : t.result.zeroTitle;
+  const body = reviewed ? t.result.zeroReviewedBody : t.result.zeroBody;
 
   return (
     <div className="rounded-2xl border tone-success p-6 text-center">
@@ -775,8 +734,8 @@ function ZeroState() {
           <path d="m5 12 5 5L20 7" />
         </svg>
       </div>
-      <p className="mt-3 text-sm font-semibold">{t.result.zeroTitle}</p>
-      <p className="tone-success-soft mt-1 text-[11px]">{t.result.zeroBody}</p>
+      <p className="mt-3 text-sm font-semibold">{title}</p>
+      <p className="tone-success-soft mt-1 text-[11px]">{body}</p>
     </div>
   );
 }
@@ -1899,13 +1858,11 @@ function FileSummary({
 function AccountRow({
   account,
   platform,
-  onToggleKeep,
-  onToggleHidden,
+  onToggleReviewed,
 }: {
   account: Account;
   platform: Platform;
-  onToggleKeep: (username: string) => void;
-  onToggleHidden: (username: string) => void;
+  onToggleReviewed: (username: string) => void;
 }) {
   const { t } = useI18n();
 
@@ -1924,12 +1881,7 @@ function AccountRow({
   }
 
   return (
-    <li
-      className={
-        'themed-card group overflow-hidden rounded-xl border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ' +
-        (account.kept ? 'border-[var(--kept-border)]' : '')
-      }
-    >
+    <li className="themed-card group overflow-hidden rounded-xl border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
       <button
         type="button"
         onClick={openProfile}
@@ -1938,16 +1890,9 @@ function AccountRow({
       >
         <Avatar account={account} />
         <div className="min-w-0 flex-1">
-          <div className="flex min-w-0 items-center gap-2">
-            <p className="truncate text-sm font-semibold text-strong">
-              {account.displayName || account.username}
-            </p>
-            {account.kept && (
-              <span className="shrink-0 rounded-full bg-[var(--kept-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--kept-text)]">
-                {t.result.keptBadge}
-              </span>
-            )}
-          </div>
+          <p className="truncate text-sm font-semibold text-strong">
+            {account.displayName || account.username}
+          </p>
           <p className="truncate text-[11px] text-muted">
             @{account.username}
           </p>
@@ -1957,19 +1902,8 @@ function AccountRow({
       <div className="flex border-t themed-border">
         <RowAction
           onClick={(event) =>
-            handleAction(event, () => onToggleKeep(account.username))
+            handleAction(event, () => onToggleReviewed(account.username))
           }
-          active={!!account.kept}
-          variant="keep"
-          label={account.kept ? t.result.keepUndo : t.result.keep}
-          description={account.kept ? t.result.keepUndoHint : t.result.keepHint}
-        />
-        <span className="w-px bg-[var(--border)]" aria-hidden />
-        <RowAction
-          onClick={(event) =>
-            handleAction(event, () => onToggleHidden(account.username))
-          }
-          variant="hide"
           label={t.result.hide}
           description={t.result.hideHint}
         />
@@ -1980,29 +1914,18 @@ function AccountRow({
 
 function RowAction({
   onClick,
-  active,
-  variant,
   label,
   description,
 }: {
   onClick: (event: MouseEvent<HTMLButtonElement>) => void;
-  active?: boolean;
-  variant: 'keep' | 'hide';
   label: string;
   description: string;
 }) {
-  const toneClass =
-    variant === 'keep'
-      ? active
-        ? 'row-action-keep-active'
-        : 'row-action-keep'
-      : 'row-action-hide';
-
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex-1 px-3 py-3 text-left transition-colors ${toneClass}`}
+      className="row-action-hide flex-1 px-3 py-3 text-center transition-colors"
     >
       <span className="block text-[11px] font-bold leading-tight">
         {label}
