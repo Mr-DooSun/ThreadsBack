@@ -31,8 +31,6 @@ type Platform = 'threads' | 'instagram';
 const HELP_LINKS = {
   accountsCenter:
     'https://accountscenter.instagram.com/info_and_permissions/dyi/',
-  threads: 'https://www.facebook.com/help/instagram/259803026523198',
-  instagram: 'https://www.facebook.com/help/instagram/181231772500920',
 };
 
 // PayPal can be added later if a separate direct support link is needed.
@@ -917,26 +915,592 @@ function HowToBlock({
   const { t } = useI18n();
 
   return (
-    <Disclosure label={t.upload.howToTitle} open={open} onToggle={onToggle}>
+    <>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        className="themed-card surface-hover flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left text-xs font-semibold text-default shadow-sm transition-colors"
+      >
+        <span>{t.upload.howToTitle}</span>
+        <span className="inline-flex items-center gap-1.5 text-[11px] text-muted">
+          {t.upload.howToOpen}
+          <ExternalLinkIcon />
+        </span>
+      </button>
+
+      {open && <HowToModal onClose={onToggle} />}
+    </>
+  );
+}
+
+function HowToModal({ onClose }: { onClose: () => void }) {
+  const { t } = useI18n();
+  const [activeStep, setActiveStep] = useState(0);
+  const totalSteps = t.upload.howToSteps.length;
+  const isFirstStep = activeStep === 0;
+  const isLastStep = activeStep === totalSteps - 1;
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') onClose();
+      if (event.key === 'ArrowLeft') {
+        setActiveStep((prev) => Math.max(prev - 1, 0));
+      }
+      if (event.key === 'ArrowRight') {
+        setActiveStep((prev) => Math.min(prev + 1, totalSteps - 1));
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose, totalSteps]);
+
+  return (
+    <div
+      className="fixed inset-0 z-30 flex items-center justify-center bg-black/55 px-3 py-4 backdrop-blur-sm"
+      role="presentation"
+      onClick={onClose}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="how-to-title"
+        className="themed-elevated w-full overflow-hidden rounded-2xl border themed-border shadow-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3 border-b themed-border px-4 py-3">
+          <div className="min-w-0">
+            <h2 id="how-to-title" className="text-sm font-semibold text-strong">
+              {t.upload.howToTitle}
+            </h2>
+            <p className="mt-1 text-[11px] leading-relaxed text-muted">
+              {t.upload.howToIntro}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t.upload.howToClose}
+            className="surface-hover -mr-1 shrink-0 rounded-full px-2 py-1 text-lg leading-none text-muted transition-colors hover:text-strong"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="space-y-4 p-4">
+          <div className="overflow-hidden">
+            <div
+              className="flex transition-transform duration-200 ease-out"
+              style={{ transform: `translateX(-${activeStep * 100}%)` }}
+            >
+              {t.upload.howToSteps.map((step, index) => (
+                <div key={step.title} className="w-full shrink-0">
+                  <GuideStep step={step} index={index} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => setActiveStep((prev) => Math.max(prev - 1, 0))}
+              disabled={isFirstStep}
+              className="themed-card surface-hover rounded-lg border px-3 py-2 text-xs font-semibold text-default transition-colors disabled:pointer-events-none disabled:opacity-35"
+            >
+              {t.upload.howToPrev}
+            </button>
+
+            <div className="flex items-center gap-1.5">
+              {t.upload.howToSteps.map((step, index) => (
+                <button
+                  key={step.title}
+                  type="button"
+                  aria-label={t.upload.howToStepCount(index + 1, totalSteps)}
+                  onClick={() => setActiveStep(index)}
+                  className={
+                    'h-1.5 rounded-full transition-all ' +
+                    (index === activeStep
+                      ? 'w-5 bg-[var(--text-strong)]'
+                      : 'w-1.5 bg-[var(--text-subtle)] opacity-45')
+                  }
+                />
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (isLastStep) {
+                  onClose();
+                  return;
+                }
+                setActiveStep((prev) => Math.min(prev + 1, totalSteps - 1));
+              }}
+              className="btn-primary rounded-lg border border-transparent px-3 py-2 text-xs font-semibold shadow-sm transition-all hover:shadow-md"
+            >
+              {isLastStep ? t.upload.howToDone : t.upload.howToNext}
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function GuideStep({
+  step,
+  index,
+}: {
+  step: ReturnType<typeof useI18n>['t']['upload']['howToSteps'][number];
+  index: number;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <article className="overflow-hidden rounded-xl border themed-border bg-[var(--bg-soft)]">
       <div className="space-y-3 p-3">
-        <ol className="list-decimal space-y-1.5 pl-4 text-[12px] leading-5 text-default">
-          {t.upload.howToSteps.map((step, index) => (
-            <li key={index}>{step}</li>
-          ))}
-        </ol>
-        <div className="grid grid-cols-1 gap-1.5">
-          <LinkButton url={HELP_LINKS.accountsCenter} primary>
-            {t.upload.accountsCenterExport}
-          </LinkButton>
-          <LinkButton url={HELP_LINKS.threads}>
-            {t.upload.threadsHelp}
-          </LinkButton>
-          <LinkButton url={HELP_LINKS.instagram}>
-            {t.upload.instagramHelp}
-          </LinkButton>
+        <div className="flex items-start gap-3">
+          <div className="brand-tile flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold tabular-nums">
+            {index + 1}
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-subtle">
+              {t.upload.howToStepCount(index + 1, t.upload.howToSteps.length)}
+            </p>
+            <h3 className="mt-0.5 text-sm font-semibold text-strong">
+              {step.title}
+            </h3>
+            <p className="mt-1 text-[11px] leading-relaxed text-muted">
+              {step.body}
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <GuidePreview
+            title={step.previewTitle}
+            items={step.previewItems}
+            activeIndex={step.previewActiveIndex}
+            kind={step.previewKind}
+          />
+          {index === 0 && (
+            <div className="flex justify-center">
+              <LinkButton url={HELP_LINKS.accountsCenter} primary centered>
+                {t.upload.accountsCenterExport}
+              </LinkButton>
+            </div>
+          )}
         </div>
       </div>
-    </Disclosure>
+    </article>
+  );
+}
+
+function GuidePreview({
+  title,
+  items,
+  activeIndex,
+  kind,
+}: {
+  title: string;
+  items: readonly string[];
+  activeIndex: number;
+  kind: 'exportHome' | 'profile' | 'destination' | 'confirm' | 'customize' | 'ready';
+}) {
+  if (kind === 'exportHome') {
+    return <MetaExportHomePreview title={title} activeIndex={activeIndex} />;
+  }
+
+  if (kind === 'profile') {
+    return <MetaProfilePreview title={title} activeIndex={activeIndex} />;
+  }
+
+  if (kind === 'destination') {
+    return (
+      <MetaDestinationPreview
+        title={title}
+        items={items}
+        activeIndex={activeIndex}
+      />
+    );
+  }
+
+  if (kind === 'confirm') {
+    return (
+      <MetaConfirmPreview
+        title={title}
+        items={items}
+        activeIndex={activeIndex}
+      />
+    );
+  }
+
+  if (kind === 'customize') {
+    return (
+      <MetaCustomizePreview
+        title={title}
+        items={items}
+        activeIndex={activeIndex}
+      />
+    );
+  }
+
+  if (kind === 'ready') {
+    return <MetaReadyPreview title={title} activeIndex={activeIndex} />;
+  }
+
+  return (
+    <div className="border-t themed-border bg-[var(--bg-soft)] p-3">
+      <div className="overflow-hidden rounded-lg border themed-border bg-[var(--bg-elevated)]">
+        <div className="flex items-center gap-1.5 border-b themed-border px-2.5 py-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-subtle)] opacity-50" />
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-subtle)] opacity-35" />
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-subtle)] opacity-25" />
+          <span className="ml-1 min-w-0 truncate text-[10px] font-semibold text-muted">
+            {title}
+          </span>
+        </div>
+        <div className="space-y-1.5 p-2.5">
+          {items.map((item, itemIndex) => (
+            <div
+              key={item}
+              className={
+                'flex items-center justify-between rounded-md border px-2 py-1.5 text-[10px] font-medium transition-colors ' +
+                (itemIndex === activeIndex
+                  ? 'btn-primary border-transparent'
+                  : 'themed-border text-muted')
+              }
+            >
+              <span className="truncate">{item}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MetaShell({
+  children,
+  showBack = false,
+}: {
+  children: ReactNode;
+  showBack?: boolean;
+}) {
+  return (
+    <div className="overflow-hidden rounded-lg border border-[#d9dde3] bg-white text-[#111318] shadow-sm">
+      <div className="flex h-7 items-center justify-between border-b-2 border-black bg-white px-3">
+        <span className="text-xl leading-none">{showBack ? '‹' : ''}</span>
+        <span className="text-xl leading-none">×</span>
+      </div>
+      <div className="p-3">{children}</div>
+    </div>
+  );
+}
+
+function MetaExportHomePreview({
+  title,
+  activeIndex,
+}: {
+  title: string;
+  activeIndex: number;
+}) {
+  return (
+    <MetaShell>
+      <div className="space-y-4">
+        <div>
+          <p className="text-base font-bold leading-tight">{title}</p>
+          <p className="mt-1 text-[10px] leading-relaxed text-[#111318]">
+            You can export a copy of your information to your device.
+          </p>
+        </div>
+        <div
+          className={
+            'rounded-full px-3 py-2 text-center text-[11px] font-semibold text-white ' +
+            (activeIndex === 0 ? 'bg-[#0866e5] ring-2 ring-[#8bb9ff]' : 'bg-[#0866e5]')
+          }
+        >
+          Create export
+        </div>
+        <div className="grid grid-cols-2 text-center text-[10px] font-semibold">
+          <div className="border-b-2 border-black pb-1 text-[#111318]">
+            Current activity
+          </div>
+          <div className="border-b border-[#d9dde3] pb-1 text-[#616771]">
+            Past activity
+          </div>
+        </div>
+      </div>
+    </MetaShell>
+  );
+}
+
+function MetaProfilePreview({
+  title,
+  activeIndex,
+}: {
+  title: string;
+  activeIndex: number;
+}) {
+  return (
+    <MetaShell showBack>
+      <div className="space-y-3">
+        <div>
+          <p className="text-base font-bold leading-tight">{title}</p>
+          <p className="mt-1 text-[10px] leading-relaxed text-[#616771]">
+            Select the account connected to your Threads profile.
+          </p>
+        </div>
+        <div
+          className={
+            'flex items-center gap-2 rounded-xl border border-[#d9dde3] p-2 ' +
+            (activeIndex === 0 ? 'bg-[#eaf2ff]' : 'bg-white')
+          }
+        >
+          <div className="h-9 w-9 shrink-0 rounded-full bg-[#d8d1c4]" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[11px] font-bold">your Instagram</p>
+            <p className="text-[10px] text-[#616771]">Instagram</p>
+          </div>
+          <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#0866e5] text-[12px] font-bold text-white">
+            ✓
+          </span>
+        </div>
+        <div className="rounded-full bg-[#0866e5] px-3 py-2 text-center text-[11px] font-semibold text-white">
+          Next
+        </div>
+      </div>
+    </MetaShell>
+  );
+}
+
+function MetaDestinationPreview({
+  title,
+  items,
+  activeIndex,
+}: {
+  title: string;
+  items: readonly string[];
+  activeIndex: number;
+}) {
+  return (
+    <MetaShell showBack>
+      <div className="space-y-3">
+        <div>
+          <p className="text-[10px] font-semibold text-[#111318]">
+            your account · Instagram
+          </p>
+          <p className="mt-1 text-base font-bold leading-tight">{title}</p>
+          <p className="mt-1 text-[10px] leading-relaxed text-[#111318]">
+            You can export info to your device or to an external service.
+          </p>
+        </div>
+        <div className="overflow-hidden rounded-xl border border-[#d9dde3]">
+          {items.map((item, index) => (
+            <MetaPreviewRow
+              key={item}
+              label={item}
+              active={index === activeIndex}
+            />
+          ))}
+        </div>
+      </div>
+    </MetaShell>
+  );
+}
+
+function MetaConfirmPreview({
+  title,
+  items,
+  activeIndex,
+}: {
+  title: string;
+  items: readonly string[];
+  activeIndex: number;
+}) {
+  const hasFinalSettings = items.some((item) => item.includes(':'));
+  const rows = hasFinalSettings
+    ? items.map((item) => {
+        const [label, value] = item.split(':').map((part) => part.trim());
+        return { label, value };
+      })
+    : [
+        { label: items[0] ?? 'Customize information', value: 'All available information' },
+        { label: items[1] ?? 'Date range', value: 'Last year' },
+        { label: items[2] ?? 'Format', value: 'HTML' },
+        { label: items[3] ?? 'Media quality', value: 'Medium quality' },
+      ];
+
+  return (
+    <MetaShell showBack>
+      <div className="space-y-3">
+        <div>
+          <p className="text-base font-bold leading-tight">{title}</p>
+          <p className="mt-1 text-[10px] leading-relaxed text-[#616771]">
+            We will send a notification when your export is ready.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 rounded-xl border border-[#d9dde3] p-2">
+          <div className="h-8 w-8 shrink-0 rounded-full bg-[#d8d1c4]" />
+          <div className="min-w-0">
+            <p className="truncate text-[11px] font-bold">your account</p>
+            <p className="text-[10px] text-[#616771]">Instagram</p>
+            <p className="text-[10px] text-[#616771]">Export to Device · Once</p>
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-xl border border-[#d9dde3]">
+          {rows.map((row, index) => (
+            <MetaPreviewRow
+              key={row.label}
+              label={row.label}
+              value={row.value}
+              active={index === activeIndex}
+            />
+          ))}
+        </div>
+
+        <div className="rounded-full bg-[#0866e5] px-3 py-2 text-center text-[11px] font-semibold text-white">
+          Start export
+        </div>
+      </div>
+    </MetaShell>
+  );
+}
+
+function MetaCustomizePreview({
+  title,
+  items,
+  activeIndex,
+}: {
+  title: string;
+  items: readonly string[];
+  activeIndex: number;
+}) {
+  const [contactsLabel] = (items[1] ?? 'Contacts').split(':').map((part) => part.trim());
+  const [followersLabel] = (items[2] ?? 'Followers and following').split(':').map((part) => part.trim());
+  const rows = [
+    { label: contactsLabel, checked: false },
+    { label: followersLabel, checked: true },
+  ];
+
+  return (
+    <MetaShell showBack>
+      <div className="space-y-3">
+        <div>
+          <p className="text-base font-bold leading-tight">{title}</p>
+          <p className="mt-1 text-[10px] leading-relaxed text-[#616771]">
+            Select only the information this analysis needs.
+          </p>
+        </div>
+
+        <div className={activeIndex === 0 ? 'rounded-lg ring-2 ring-[#0866e5]' : ''}>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-bold">Connections</p>
+            <span className="text-[11px] font-semibold text-[#0866e5]">
+              {items[0] ?? 'Clear all'}
+            </span>
+          </div>
+          <p className="mt-0.5 text-[10px] leading-relaxed text-[#616771]">
+            Who and how you have connected with people
+          </p>
+        </div>
+
+        <div className="overflow-hidden rounded-xl border border-[#d9dde3]">
+          {rows.map((row, index) => (
+            <div
+              key={row.label}
+              className={
+                'flex items-center justify-between border-b border-[#d9dde3] px-3 py-2 last:border-b-0 ' +
+                (index + 1 === activeIndex ? 'bg-[#eaf2ff]' : 'bg-white')
+              }
+            >
+              <span className="text-[11px] font-semibold">{row.label}</span>
+              <span
+                className={
+                  'flex h-5 w-5 items-center justify-center rounded-md border text-[12px] font-bold ' +
+                  (row.checked
+                    ? 'border-[#0866e5] bg-[#0866e5] text-white'
+                    : 'border-[#b9c0ca] bg-white text-transparent')
+                }
+              >
+                ✓
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="rounded-full bg-[#0866e5] px-3 py-2 text-center text-[11px] font-semibold text-white">
+          Save
+        </div>
+      </div>
+    </MetaShell>
+  );
+}
+
+function MetaReadyPreview({
+  title,
+  activeIndex,
+}: {
+  title: string;
+  activeIndex: number;
+}) {
+  return (
+    <MetaShell>
+      <div className="space-y-3">
+        <div>
+          <p className="text-base font-bold leading-tight">{title}</p>
+          <p className="mt-1 text-[10px] leading-relaxed text-[#616771]">
+            Your export is ready for a limited time.
+          </p>
+        </div>
+        <div
+          className={
+            'rounded-xl border border-[#d9dde3] p-3 ' +
+            (activeIndex === 0 ? 'bg-[#eaf2ff]' : 'bg-white')
+          }
+        >
+          <p className="text-[11px] font-bold">Available information download</p>
+          <p className="mt-1 text-[10px] text-[#616771]">ZIP · JSON</p>
+          <div className="mt-3 rounded-full bg-[#0866e5] px-3 py-2 text-center text-[11px] font-semibold text-white">
+            Download
+          </div>
+        </div>
+      </div>
+    </MetaShell>
+  );
+}
+
+function MetaPreviewRow({
+  label,
+  value,
+  active,
+}: {
+  label: string;
+  value?: string;
+  active: boolean;
+}) {
+  return (
+    <div
+      className={
+        'flex items-center justify-between border-b border-[#d9dde3] px-3 py-2 last:border-b-0 ' +
+        (active ? 'bg-[#eaf2ff]' : 'bg-white')
+      }
+    >
+      <div className="min-w-0">
+        <p className="truncate text-[11px] font-bold">{label}</p>
+        {value && (
+          <p className="mt-0.5 truncate text-[10px] text-[#616771]">
+            {value}
+          </p>
+        )}
+      </div>
+      <span className="ml-2 text-lg leading-none text-[#111318]">›</span>
+    </div>
   );
 }
 
@@ -990,10 +1554,12 @@ function ChevronIcon({ open }: { open: boolean }) {
 function LinkButton({
   url,
   primary = false,
+  centered = false,
   children,
 }: {
   url: string;
   primary?: boolean;
+  centered?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -1001,7 +1567,8 @@ function LinkButton({
       type="button"
       onClick={() => void browser.tabs.create({ url })}
       className={
-        'flex items-center justify-between rounded-lg border px-3 py-2 text-left text-xs font-medium transition-colors ' +
+        'flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-xs font-medium transition-colors ' +
+        (centered ? 'justify-center ' : 'justify-between ') +
         (primary
           ? 'btn-primary border-transparent shadow-sm hover:shadow-md'
           : 'themed-card surface-hover text-default')

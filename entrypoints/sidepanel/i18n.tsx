@@ -29,10 +29,29 @@ interface Dict {
     dropActive: string;
     privacyNote: string;
     howToTitle: string;
-    howToSteps: readonly string[];
+    howToOpen: string;
+    howToIntro: string;
+    howToClose: string;
+    howToPrev: string;
+    howToNext: string;
+    howToDone: string;
+    howToStepCount: (current: number, total: number) => string;
+    howToSteps: readonly {
+      title: string;
+      body: string;
+      previewTitle: string;
+      previewItems: readonly string[];
+      previewActiveIndex: number;
+      previewKind:
+        | 'exportHome'
+        | 'profile'
+        | 'destination'
+        | 'confirm'
+        | 'customize'
+        | 'ready';
+    }[];
+    howToFooterNote: string;
     accountsCenterExport: string;
-    threadsHelp: string;
-    instagramHelp: string;
     statusIdle: string;
     statusParsing: string;
     statusReady: string;
@@ -105,16 +124,73 @@ const en: Dict = {
     dropActive: 'Drop the file to upload',
     privacyNote: 'Files are read only inside your browser.',
     howToTitle: 'How to get my data',
+    howToOpen: 'Open guide',
+    howToIntro: 'Follow these screens in Meta Accounts Center, then come back with the ZIP file.',
+    howToClose: 'Close',
+    howToPrev: 'Back',
+    howToNext: 'Next',
+    howToDone: 'Done',
+    howToStepCount: (current, total) => `Step ${current} of ${total}`,
     howToSteps: [
-      'Open Meta Accounts Center and choose "Create export".',
-      'Select the Threads or Instagram profile you want to analyze.',
-      'Choose "Export to device" and JSON format.',
-      'Pick "Followers and following", "Connections", or all available information.',
-      'When the request is ready, download the ZIP and upload the file here, not a screenshot or link.',
+      {
+        title: 'Create export',
+        body: 'Open Meta Accounts Center export and start a new export request.',
+        previewTitle: 'Export your information',
+        previewItems: ['Create export', 'Current activity', 'Past activity'],
+        previewActiveIndex: 0,
+        previewKind: 'exportHome',
+      },
+      {
+        title: 'Choose Instagram profile',
+        body: 'If your Threads profile was created with Instagram, select that connected Instagram profile.',
+        previewTitle: 'Select profile',
+        previewItems: ['Instagram profile', 'Connected Threads data'],
+        previewActiveIndex: 0,
+        previewKind: 'profile',
+      },
+      {
+        title: 'Export to device',
+        body: 'Choose export to device, not export to an external service.',
+        previewTitle: 'Choose where to export',
+        previewItems: ['Export to device', 'Export to external service'],
+        previewActiveIndex: 0,
+        previewKind: 'destination',
+      },
+      {
+        title: 'Confirm export settings',
+        body: 'Open Customize information. Do not export everything.',
+        previewTitle: 'Confirm your export',
+        previewItems: ['Customize information', 'Date range', 'Format', 'Media quality'],
+        previewActiveIndex: 0,
+        previewKind: 'confirm',
+      },
+      {
+        title: 'Only select followers',
+        body: 'Use Clear all first. In Connections, leave Contacts off and select only Followers and following.',
+        previewTitle: 'Customize information',
+        previewItems: ['Clear all', 'Contacts: off', 'Followers and following: on'],
+        previewActiveIndex: 2,
+        previewKind: 'customize',
+      },
+      {
+        title: 'Set JSON format',
+        body: 'Set Date range to all time if available and Format to JSON. Media quality does not matter for this analysis.',
+        previewTitle: 'Confirm your export',
+        previewItems: ['Date range: all time', 'Format: JSON', 'Media quality: any'],
+        previewActiveIndex: -1,
+        previewKind: 'confirm',
+      },
+      {
+        title: 'Upload the file',
+        body: 'When Meta finishes preparing the request, download the ZIP and upload it here.',
+        previewTitle: 'Ready to download',
+        previewItems: ['Download', 'ZIP file', 'Upload here'],
+        previewActiveIndex: 0,
+        previewKind: 'ready',
+      },
     ],
+    howToFooterNote: 'Screens may vary by account or language. The important part is the ZIP or JSON file, not a screenshot or link.',
     accountsCenterExport: 'Open Meta Accounts Center export',
-    threadsHelp: 'Threads official help',
-    instagramHelp: 'Instagram official help',
     statusIdle: 'Waiting',
     statusParsing: 'Reading…',
     statusReady: 'Ready',
@@ -187,16 +263,73 @@ const ko: Dict = {
     dropActive: '파일을 여기에 놓으세요',
     privacyNote: '파일은 브라우저 안에서만 처리됩니다.',
     howToTitle: '데이터 받는 방법',
+    howToOpen: '가이드 열기',
+    howToIntro: 'Meta Accounts Center에서 아래 흐름대로 진행한 뒤, ZIP 파일을 받아 다시 돌아오면 됩니다.',
+    howToClose: '닫기',
+    howToPrev: '이전',
+    howToNext: '다음',
+    howToDone: '완료',
+    howToStepCount: (current, total) => `${total}단계 중 ${current}단계`,
     howToSteps: [
-      'Meta Accounts Center를 열고 "Create export"를 누릅니다.',
-      '분석할 Threads 또는 Instagram 프로필을 선택합니다.',
-      '"Export to device"와 JSON 형식을 선택합니다.',
-      '"Followers and following", "Connections" 또는 전체 정보를 선택합니다.',
-      '요청이 준비되면 ZIP 파일을 다운로드해 여기에 업로드합니다. 스크린샷이나 링크는 데이터가 아닙니다.',
+      {
+        title: 'Export 만들기',
+        body: 'Meta Accounts Center export를 열고 새 export 요청을 시작합니다.',
+        previewTitle: 'Export your information',
+        previewItems: ['Create export', 'Current activity', 'Past activity'],
+        previewActiveIndex: 0,
+        previewKind: 'exportHome',
+      },
+      {
+        title: 'Instagram 프로필 선택',
+        body: 'Threads를 Instagram 계정으로 만들었다면 연결된 Instagram 프로필을 선택합니다.',
+        previewTitle: 'Select profile',
+        previewItems: ['Instagram profile', 'Connected Threads data'],
+        previewActiveIndex: 0,
+        previewKind: 'profile',
+      },
+      {
+        title: '기기에 내보내기',
+        body: '외부 서비스가 아니라 Export to device를 선택합니다.',
+        previewTitle: 'Choose where to export',
+        previewItems: ['Export to device', 'Export to external service'],
+        previewActiveIndex: 0,
+        previewKind: 'destination',
+      },
+      {
+        title: 'Export 설정 확인',
+        body: 'Customize information으로 들어갑니다. 전체 정보는 내보내지 않는 게 좋습니다.',
+        previewTitle: 'Confirm your export',
+        previewItems: ['Customize information', 'Date range', 'Format', 'Media quality'],
+        previewActiveIndex: 0,
+        previewKind: 'confirm',
+      },
+      {
+        title: '팔로워만 선택',
+        body: '먼저 Clear all로 전체 선택을 해제합니다. Connections에서는 Contacts는 끄고 Followers and following만 켭니다.',
+        previewTitle: 'Customize information',
+        previewItems: ['Clear all', 'Contacts: 끔', 'Followers and following: 켬'],
+        previewActiveIndex: 2,
+        previewKind: 'customize',
+      },
+      {
+        title: 'JSON 형식 설정',
+        body: 'Date range는 가능하면 전체 기간, Format은 JSON으로 설정합니다. Media quality는 이 분석에 중요하지 않습니다.',
+        previewTitle: 'Confirm your export',
+        previewItems: ['Date range: 전체 기간', 'Format: JSON', 'Media quality: 아무거나'],
+        previewActiveIndex: -1,
+        previewKind: 'confirm',
+      },
+      {
+        title: '파일 업로드',
+        body: 'Meta가 준비를 끝내면 ZIP 파일을 다운로드해서 여기에 업로드합니다.',
+        previewTitle: 'Ready to download',
+        previewItems: ['Download', 'ZIP file', 'Upload here'],
+        previewActiveIndex: 0,
+        previewKind: 'ready',
+      },
     ],
+    howToFooterNote: '계정이나 언어에 따라 화면은 조금 다를 수 있습니다. 중요한 건 스크린샷이나 링크가 아니라 ZIP 또는 JSON 파일입니다.',
     accountsCenterExport: 'Meta Accounts Center export 열기',
-    threadsHelp: 'Threads 공식 도움말',
-    instagramHelp: 'Instagram 공식 도움말',
     statusIdle: '대기',
     statusParsing: '읽는 중',
     statusReady: '읽기 완료',
